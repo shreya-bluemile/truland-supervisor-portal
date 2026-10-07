@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client Handover</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#e8eaed;
+    --rail:#16181c;
+    --card:#ffffff;
+    --soft:#f5f6f7;
+    --line:#e6e8eb;
+    --text:#16181c;
+    --muted:#737880;
+    --faint:#a9adb4;
+    --red:#ee1c2e;
+    --red-soft:#fdecee;
+    --red-line:#f8cdd2;
+    --orange:#e8820c;
+    --green:#1f9a5e;
+    --green-soft:#e4f5ec;
+    --blue:#4a6fe0;
+    --blue-soft:#e9eefc;
+    --violet:#6e4de0;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+  a{color:inherit;}
+  svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+
+  .app{display:flex;min-height:100vh;}
+
+  /* Left rail */
+  .rail{width:52px;background:var(--rail);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:14px;flex:none;}
+  .logo{font-weight:800;font-size:18px;letter-spacing:-1px;color:#fff;margin-bottom:4px;}
+  .logo span{color:var(--red);}
+  .rail-btn{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#b9bdc4;}
+  .rail-btn svg{width:17px;height:17px;}
+  .rail-btn.menu{width:24px;height:24px;background:#2a2d33;border-radius:6px;margin-bottom:6px;}
+  .rail-btn.menu svg{width:13px;height:13px;}
+  .rail-btn.active{background:var(--red);color:#fff;}
+
+  .main{flex:1;min-width:0;padding:14px 16px 20px;}
+  .topbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .back{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12px;text-decoration:none;}
+  .search{margin-left:auto;display:flex;align-items:center;gap:6px;background:#fff;border-radius:999px;padding:6px 12px;width:150px;color:var(--faint);font-size:10.5px;}
+  .search input{border:none;outline:none;font:inherit;flex:1;min-width:0;background:none;}
+  .bell{width:28px;height:28px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--orange);}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:stretch;}
+
+  /* Left column */
+  .title{font-size:21px;font-weight:700;letter-spacing:-.3px;}
+  .addr{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;margin:5px 0 14px;}
+  .addr svg{width:12px;height:12px;}
+
+  .strip{display:grid;grid-template-columns:1.7fr 1fr 1fr 0.9fr;gap:14px;background:#fff;border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;}
+  .lbl{font-size:9px;font-weight:500;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+  .val{display:flex;align-items:center;gap:6px;font-weight:600;font-size:11.5px;}
+  .stage{display:inline-flex;align-items:center;gap:5px;color:var(--orange);font-weight:600;font-size:11.5px;}
+  .stage::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--orange);}
+  .avatar{border-radius:50%;background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;flex:none;}
+  .avatar.sm{width:18px;height:18px;font-size:7.5px;}
+
+  /* Contractor contact lines — sit under the name, indented to line up with it */
+  .contact-lines{margin-top:6px;padding-left:24px;display:flex;flex-direction:column;gap:3px;}
+  .contact{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);min-width:0;}
+  .contact > svg{width:11px;height:11px;color:var(--faint);}
+  .contact a{text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .contact a:hover{color:var(--violet);text-decoration:underline;}
+  .copy{display:inline-flex;color:var(--faint);padding:2px;border-radius:3px;flex:none;opacity:0;transition:opacity .15s;}
+  .contact:hover .copy,.copy:focus-visible,.copy.done{opacity:1;}
+  .copy:hover{color:var(--text);background:var(--soft);}
+  .copy.done{color:var(--green);}
+  .copy svg{width:11px;height:11px;}
+  @media (hover:none){ .copy{opacity:1;} }
+
+  .sec-head{display:flex;align-items:baseline;gap:8px;margin:0 0 8px;}
+  .sec-head h3{font-size:13px;font-weight:600;}
+  .count{font-size:10px;color:var(--muted);}
+  .link-btn{margin-left:auto;display:inline-flex;align-items:center;gap:4px;color:var(--violet);font-size:10.5px;font-weight:500;}
+  .link-btn svg{width:11px;height:11px;}
+  .section{margin-bottom:16px;}
+  .list{display:flex;flex-direction:column;gap:8px;}
+
+  .item{background:#fff;border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid transparent;}
+  .item:hover{border-color:var(--line);}
+  .ic{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+  .ic.pdf{background:var(--red-soft);color:var(--red);}
+  .ic.img{background:var(--blue-soft);color:var(--blue);}
+  .ic.visit{background:var(--green-soft);color:var(--green);}
+  .ic.haz{background:var(--red);color:#fff;}
+  .name{font-weight:600;font-size:11.5px;}
+  .sub{font-size:10px;color:var(--muted);margin-top:2px;}
+  .chev{margin-left:auto;color:var(--faint);}
+  .item.hazard{background:var(--red-soft);border-color:var(--red-line);}
+  .item.hazard .name{color:var(--red);}
+  .item.hazard .sub{color:#c0525c;}
+
+  /* Activity panel */
+  .panel{background:#fff;border-radius:10px;display:flex;flex-direction:column;min-height:560px;}
+  .panel-title{font-size:13px;font-weight:600;padding:16px 16px 10px;}
+  .tabs{display:flex;gap:18px;padding:0 16px;border-bottom:1px solid var(--line);}
+  .tab{padding:6px 0 8px;font-size:10.5px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .tab.active{color:var(--text);border-color:var(--violet);}
+  .notes{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:16px;}
+  .note{display:flex;gap:8px;}
+  .note-head{display:flex;align-items:baseline;gap:6px;}
+  .note-head b{font-size:11px;font-weight:600;}
+  .note-head time{font-size:9.5px;color:var(--muted);}
+  .note p{font-size:10.5px;color:#3c4047;line-height:1.55;margin-top:3px;}
+  .attach{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:9.5px;font-weight:500;margin-top:7px;}
+  .attach svg{width:11px;height:11px;}
+  .composer{padding:12px 16px 16px;border-top:1px solid var(--line);}
+  .composer textarea{width:100%;height:46px;border:1px solid var(--line);border-radius:6px;padding:8px;font:inherit;font-size:10.5px;resize:none;outline:none;}
+  .composer textarea:focus{border-color:var(--violet);}
+  .composer-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+  .attach-btn{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--muted);}
+  .primary{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;border-radius:6px;padding:6px 12px;font-size:10.5px;font-weight:600;}
+  .primary:hover{background:#d51526;}
+
+  @media (max-width:900px){
+    .rail{display:none;}
+    .grid{grid-template-columns:1fr;}
+    .panel{min-height:0;}
+  }
+  @media (max-width:560px){
+    .main{padding:12px 16px;}
+    .strip{grid-template-columns:1fr 1fr;}
+    .strip > .contractor{grid-column:1 / -1;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="rail">
+    <div class="logo">T<span>H</span></div>
+    <button class="rail-btn menu" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <button class="rail-btn active" aria-label="Dashboard"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></button>
+    <button class="rail-btn" aria-label="Schedule"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></button>
+    <button class="rail-btn" aria-label="Tasks"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M9 13l2 2 4-4"/></svg></button>
+    <button class="rail-btn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <a class="back" href="#"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Client Handover</a>
+      <label class="search"><input placeholder="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></label>
+      <button class="bell" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></button>
+    </div>
+
+    <div class="grid">
+      <div>
+        <h1 class="title">Client handover</h1>
+        <div class="addr"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Lot 42 Northmead, VIC 2152</div>
+
+        <div class="strip">
+          <div class="contractor">
+            <div class="lbl">Contractor</div>
+            <div class="val"><div class="avatar sm">AM</div>Amelia Marsh</div>
+            <div class="contact-lines">
+              <div class="contact">
+                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                <a href="mailto:amelia.marsh@trulandhomes.com.au" id="c-email">amelia.marsh@trulandhomes.com.au</a>
+                <button class="copy" data-copy="c-email" aria-label="Copy email"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg></button>
+              </div>
+              <div class="contact">
+                <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+                <a href="tel:0412345678" id="c-phone">0412 345 678</a>
+                <button class="copy" data-copy="c-phone" aria-label="Copy phone"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div><div class="lbl">Scheduled</div><div class="val">12 Aug 2026</div></div>
+          <div><div class="lbl">Completion</div><div class="val">12 Aug 2026</div></div>
+          <div><div class="lbl">Stage</div><span class="stage">Booked</span></div>
+        </div>
+
+        <section class="section">
+          <div class="sec-head"><h3>Documents</h3><span class="count">2 files</span><button class="link-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Upload</button></div>
+          <div class="list">
+            <div class="item">
+              <div class="ic pdf"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg></div>
+              <div><div class="name">handover-signoff.pdf</div><div class="sub">2.5 KB · PDF</div></div>
+              <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            </div>
+            <div class="item">
+              <div class="ic img"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></div>
+              <div><div class="name">handover-photo-2.jpg</div><div class="sub">2.5 KB · JPG</div></div>
+              <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="sec-head"><h3>Hazards</h3><span class="count">1 active</span><button class="link-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add hazard</button></div>
+          <div class="item hazard">
+            <div class="ic haz"><svg viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3zM12 10v4M12 17h.01"/></svg></div>
+            <div><div class="name">Live electrical at meter box</div><div class="sub">Isolate before walkthrough</div></div>
+            <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="sec-head"><h3>Site visits</h3><span class="count">1 scheduled</span><button class="link-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Log visit</button></div>
+          <div class="item">
+            <div class="ic visit"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></div>
+            <div><div class="name">Pre-handover walkthrough</div><div class="sub">12 Jun 2026 · 10:00 AM · Lot 42</div></div>
+            <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel">
+        <div class="panel-title">Activity</div>
+        <div class="tabs">
+          <button class="tab active">Notes · 5</button>
+          <button class="tab">Activity · 2</button>
+        </div>
+        <div class="notes">
+          <div class="note">
+            <div class="avatar sm">AM</div>
+            <div>
+              <div class="note-head"><b>Amelia Marsh</b><time>17 Aug · 2:10 PM</time></div>
+              <p>Need the signed PDF on the day — don't close the booking without it.</p>
+              <span class="attach"><svg viewBox="0 0 24 24" style="color:var(--red)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>sign-off-checklist.pdf</span>
+            </div>
+          </div>
+          <div class="note">
+            <div class="avatar sm">AM</div>
+            <div>
+              <div class="note-head"><b>Amelia Marsh</b><time>17 Aug · 2:10 PM</time></div>
+              <p>Client on site 10am. Walk the meter box last — isolation to be confirmed before photos.</p>
+              <span class="attach"><svg viewBox="0 0 24 24" style="color:var(--blue)"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>meter-box.jpg</span>
+            </div>
+          </div>
+        </div>
+        <div class="composer">
+          <textarea placeholder="Add a note for the crew..."></textarea>
+          <div class="composer-foot">
+            <button class="attach-btn"><svg viewBox="0 0 24 24"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg>Attach</button>
+            <button class="primary">Add note <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Copy is the reliable action on a tablet; mailto:/tel: may do nothing without a mail app or dialer.
+  document.querySelectorAll('.copy').forEach(btn => {
+    const icon = btn.innerHTML;
+    btn.addEventListener('click', () => {
+      const text = document.getElementById(btn.dataset.copy).textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
+      btn.classList.add('done');
+      btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
+      setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = icon; }, 1200);
+    });
+  });
+</script>
+</body>
+</html>

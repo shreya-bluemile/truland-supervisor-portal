@@ -1,0 +1,192 @@
+<title>Booking Detail — 3 Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --ink:#0E1016; --ink-soft:#1B1D26;
+    --canvas:#E8EBEF; --surface:#FFFFFF; --border:#E1E4E9;
+    --text:#10131A; --text-muted:#8B92A1; --text-faint:#AEB4BE;
+    --accent:#FF1E32;
+    --status-good-bg:#DFF3E3; --status-good-fg:#1C7A43;
+    --status-warn-bg:#FCEAD1; --status-warn-fg:#B35A0B;
+    --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{background:#F3F4F6;color:var(--text);font-family:var(--font-body);}
+  .page{max-width:1400px;margin:0 auto;padding:32px 24px 60px;}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);}
+  h1{font-size:24px;font-weight:800;margin:4px 0 8px;color:#171A21;}
+  .sub{font-size:13.5px;color:#6B6F78;max-width:80ch;line-height:1.55;margin:0 0 30px;}
+  .grid{display:flex;gap:22px;align-items:flex-start;overflow-x:auto;padding-bottom:20px;}
+  .col{width:380px;flex:none;}
+  .col-label{font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px;}
+  .col-desc{font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-bottom:14px;min-height:48px;}
+  .frame{background:var(--canvas);border-radius:20px;box-shadow:0 20px 44px -20px rgba(15,17,25,.3);overflow:hidden;height:720px;overflow-y:auto;}
+
+  .pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+  .pill-good{background:var(--status-good-bg);color:var(--status-good-fg);}
+  .pill-warn{background:var(--status-warn-bg);color:var(--status-warn-fg);}
+
+  /* ============ CONCEPT A — Command console: dense, KPI-first ============ */
+  .a-topbar{background:var(--ink);color:#fff;padding:16px 18px;display:flex;flex-direction:column;gap:6px;}
+  .a-back{font-size:11.5px;color:#9199A8;}
+  .a-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .a-title-row h3{font-size:17px;font-weight:800;margin:0;}
+  .a-meta{font-size:11px;color:#9199A8;font-family:var(--font-mono);}
+  .a-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+  .a-kpi{background:#fff;padding:14px 10px;text-align:center;}
+  .a-kpi b{display:block;font-family:var(--font-mono);font-size:18px;color:var(--text);}
+  .a-kpi span{font-size:9px;color:var(--text-faint);letter-spacing:.05em;text-transform:uppercase;}
+  .a-section{padding:14px 16px;}
+  .a-section h4{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text-faint);margin:0 0 8px;}
+  .a-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F0F1F3;}
+  .a-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .a-row b{flex:1;font-size:12.5px;font-weight:600;color:var(--text);}
+  .a-row span{font-size:10.5px;color:var(--text-muted);}
+
+  /* ============ CONCEPT B — Editorial: no cards, pure typography ============ */
+  .b-wrap{padding:26px 22px;background:#fff;}
+  .b-back{font-size:12px;color:var(--text-muted);margin-bottom:20px;}
+  .b-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+  .b-title{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0 0 10px;line-height:1.15;}
+  .b-status-line{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:18px;}
+  .b-status-line b{color:var(--status-good-fg);}
+  .b-desc{font-size:13px;color:#4B4F58;line-height:1.7;margin-bottom:22px;}
+  .b-rule{border:none;border-top:1px solid var(--border);margin:22px 0;}
+  .b-section-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
+  .b-section-h h4{font-size:14px;font-weight:800;margin:0;}
+  .b-section-h span{font-size:11px;color:var(--text-faint);font-family:var(--font-mono);}
+  .b-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;}
+  .b-check{width:16px;height:16px;border-radius:5px;flex:none;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;}
+  .b-item div b{display:block;font-size:12.5px;font-weight:600;}
+  .b-item div span{font-size:11px;color:var(--text-muted);}
+  .b-doc{font-size:12.5px;color:var(--text);padding:6px 0;display:flex;gap:8px;align-items:center;}
+  .b-doc span{color:var(--text-faint);font-size:10.5px;}
+
+  /* ============ CONCEPT C — Action console: task-first, everything else collapsed ============ */
+  .c-wrap{padding:16px;display:flex;flex-direction:column;gap:14px;}
+  .c-back{font-size:11.5px;color:var(--text-muted);}
+  .c-hero{background:#fff;border-radius:16px;padding:16px 16px 14px;}
+  .c-hero-top{display:flex;align-items:center;justify-content:space-between;}
+  .c-hero-top h3{font-size:16px;font-weight:800;margin:0;}
+  .c-hero-loc{font-size:11.5px;color:var(--text-muted);margin-top:3px;}
+  .c-cta{background:linear-gradient(135deg,#FF1E32,#D6142B);border-radius:16px;padding:18px 16px;color:#fff;display:flex;flex-direction:column;gap:10px;}
+  .c-cta .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85;}
+  .c-cta .msg{font-size:14px;font-weight:700;line-height:1.4;}
+  .c-cta .btn{align-self:flex-start;background:#fff;color:var(--accent);font-size:12.5px;font-weight:800;padding:9px 16px;border-radius:9px;}
+  .c-ready{background:linear-gradient(135deg,#1C7A43,#155C33);border-radius:16px;padding:18px 16px;color:#fff;display:flex;align-items:center;gap:12px;}
+  .c-ready .ic{font-size:26px;}
+  .c-ready b{display:block;font-size:14px;}
+  .c-ready span{font-size:11.5px;opacity:.85;}
+  .c-checklist{background:#fff;border-radius:16px;padding:14px 16px;}
+  .c-checklist h4{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin:0 0 10px;}
+  .c-check-row{display:flex;align-items:center;gap:10px;padding:8px 0;}
+  .c-check-circle{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex:none;}
+  .c-check-row b{flex:1;font-size:12.5px;font-weight:600;}
+  .c-accordion{background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;color:var(--text-muted);font-size:12.5px;font-weight:600;}
+  .c-accordion span{font-size:11px;color:var(--text-faint);}
+</style>
+
+<div class="page">
+  <span class="eyebrow">Truland Homes · Supervisor App</span>
+  <h1>Booking detail — three directions</h1>
+  <p class="sub">Same booking (Client handover, Lot 42), three genuinely different structures — not color variants. Pick one, mix two, or tell me none of them land and what's still missing.</p>
+
+  <div class="grid">
+
+    <!-- ============ A ============ -->
+    <div class="col">
+      <div class="col-label">A — Command console</div>
+      <div class="col-desc">Dense and data-first. A slim dark bar instead of a big card, three KPI tiles up top (ready / docs / POs), then plain compact rows below. Reads like an ops dashboard — fast to scan, low decoration.</div>
+      <div class="frame">
+        <div class="a-topbar">
+          <div class="a-back">‹ Client handover</div>
+          <div class="a-title-row"><h3>Site inspection</h3><span class="pill pill-good">Approved</span></div>
+          <div class="a-meta">Lot 42 Northmead Dr · 18-08-2026</div>
+        </div>
+        <div class="a-kpis">
+          <div class="a-kpi"><b>4/7</b><span>Ready</span></div>
+          <div class="a-kpi"><b>2</b><span>Docs</span></div>
+          <div class="a-kpi"><b>5</b><span>POs</span></div>
+        </div>
+        <div class="a-section">
+          <h4>Dependent bookings</h4>
+          <div class="a-row"><div class="a-dot" style="background:#3FA866;"></div><b>Site inspection</b><span>Approved</span></div>
+          <div class="a-row"><div class="a-dot" style="background:#E39A3D;"></div><b>Final clean</b><span>Pending</span></div>
+          <div class="a-row"><div class="a-dot" style="background:#3FA866;"></div><b>Utilities connection</b><span>Approved</span></div>
+          <div class="a-row"><div class="a-dot" style="background:#E39A3D;"></div><b>Landscaping sign-off</b><span>In progress</span></div>
+          <div class="a-row"><div class="a-dot" style="background:#3FA866;"></div><b>Fencing install</b><span>Approved</span></div>
+        </div>
+        <div class="a-section">
+          <h4>Purchase orders</h4>
+          <div class="a-row"><b>PO-2041 · Fixtures</b><span>$4,250</span></div>
+          <div class="a-row"><b>PO-2044 · Landscaping</b><span>$1,980</span></div>
+        </div>
+        <div class="a-section">
+          <h4>Documents</h4>
+          <div class="a-row"><b>handover-signoff.pdf</b><span>480 KB</span></div>
+          <div class="a-row"><b>handover-photo.jpg</b><span>2.1 MB</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ B ============ -->
+    <div class="col">
+      <div class="col-label">B — Editorial</div>
+      <div class="col-desc">No cards at all — just typographic hierarchy on white, like a native report/document. Sections divided by rules, dependent bookings as a real checklist. Calm, spacious, the most "tablet-native" of the three.</div>
+      <div class="frame">
+        <div class="b-wrap">
+          <div class="b-back">‹ Back to Client handover</div>
+          <div class="b-eyebrow">Booking · Lot 42 Northmead Dr</div>
+          <h2 class="b-title">Site inspection</h2>
+          <div class="b-status-line"><b>● Approved</b> · 18-08-2026</div>
+          <p class="b-desc">Verify alignment against plan, confirm bracing installed per engineering spec, and attach site photos before requesting supervisor approval.</p>
+          <hr class="b-rule">
+          <div class="b-section-h"><h4>Dependent bookings</h4><span>4/7</span></div>
+          <div class="b-item"><div class="b-check" style="background:#3FA866;">✓</div><div><b>Site inspection</b><span>Lot 42 · MSLES878</span></div></div>
+          <div class="b-item"><div class="b-check" style="background:#E39A3D;">·</div><div><b>Final clean</b><span>Pending</span></div></div>
+          <div class="b-item"><div class="b-check" style="background:#3FA866;">✓</div><div><b>Utilities connection</b><span>Approved</span></div></div>
+          <div class="b-item"><div class="b-check" style="background:#E39A3D;">·</div><div><b>Landscaping sign-off</b><span>In progress</span></div></div>
+          <hr class="b-rule">
+          <div class="b-section-h"><h4>Documents</h4><span>2</span></div>
+          <div class="b-doc">📕 handover-signoff.pdf <span>480 KB</span></div>
+          <div class="b-doc">🖼️ handover-photo.jpg <span>2.1 MB</span></div>
+          <hr class="b-rule">
+          <div class="b-section-h"><h4>Purchase orders</h4><span>5</span></div>
+          <div class="b-doc">PO-2041 · Fixtures <span>$4,250 · Beacon</span></div>
+          <div class="b-doc">PO-2044 · Landscaping <span>$1,980 · GreenCo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ C ============ -->
+    <div class="col">
+      <div class="col-label">C — Action console</div>
+      <div class="col-desc">Built around "what do I need to do right now." One bold action card at the top (review needed, or a green "ready to close" state) — the loudest thing on the page. Docs/POs demoted to a single collapsed row since they're reference-only.</div>
+      <div class="frame">
+        <div class="c-wrap">
+          <div class="c-back">‹ Back to Client handover</div>
+          <div class="c-hero">
+            <div class="c-hero-top"><h3>Site inspection</h3><span class="pill pill-warn">Needs approval</span></div>
+            <div class="c-hero-loc">📍 Lot 42 Northmead Dr · 18-08-2026</div>
+          </div>
+          <div class="c-cta">
+            <div class="lbl">Action needed</div>
+            <div class="msg">This booking is waiting on your approval before the crew can proceed.</div>
+            <span class="btn">Review now ›</span>
+          </div>
+          <div class="c-checklist">
+            <h4>Dependent bookings · 4/7 ready</h4>
+            <div class="c-check-row"><div class="c-check-circle" style="background:#3FA866;">✓</div><b>Site inspection</b><span class="pill pill-good">Approved</span></div>
+            <div class="c-check-row"><div class="c-check-circle" style="background:#E39A3D;">·</div><b>Final clean</b><span class="pill pill-warn">Pending</span></div>
+            <div class="c-check-row"><div class="c-check-circle" style="background:#3FA866;">✓</div><b>Utilities connection</b><span class="pill pill-good">Approved</span></div>
+            <div class="c-check-row"><div class="c-check-circle" style="background:#E39A3D;">·</div><b>Landscaping sign-off</b><span class="pill pill-warn">In progress</span></div>
+          </div>
+          <div class="c-accordion">📎 Documents &amp; purchase orders <span>2 docs · 5 POs ›</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

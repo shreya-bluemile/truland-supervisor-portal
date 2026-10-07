@@ -1,0 +1,402 @@
+<!-- Truland Schedules mockup -->
+<title>Truland Schedules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --page-bg:#EEF0F3;
+    --page-text:#42454C;
+    --ink:#0E1016;
+    --ink-soft:#1B1D26;
+    --ink-line:#2A2D38;
+    --canvas:#E8EBEF;
+    --surface:#FFFFFF;
+    --border:#E1E4E9;
+    --text:#10131A;
+    --text-muted:#8B92A1;
+    --text-faint:#AEB4BE;
+    --accent:#FF1E32;
+    --status-good-bg:#DFF3E3; --status-good-fg:#1C7A43;
+    --status-warn-bg:#FCEAD1; --status-warn-fg:#B35A0B;
+    --status-hold-bg:#E7EBFB; --status-hold-fg:#4552B0;
+    --status-neutral-bg:#ECEDF1; --status-neutral-fg:#585E6B;
+    --av-1-bg:#DCE3FF; --av-1-fg:#33449E;
+    --av-2-bg:#FFE3D6; --av-2-fg:#B3521F;
+    --av-3-bg:#D9F2E6; --av-3-fg:#1D7A56;
+    --av-4-bg:#F4DCF3; --av-4-fg:#8A3A87;
+    --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+    --tag:#C4111F;
+    --tag-bg:#FFF0F1;
+    --banner-bg:#FDF6EB; --banner-line:#F0DFC0; --banner-fg:#8A5B1F;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--page-bg);color:var(--page-text);font-family:var(--font-body);}
+
+  .page{max-width:1400px;margin:0 auto;padding:36px 28px 64px;}
+  .masthead{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.01em;margin:0;color:#171A21;text-wrap:balance;}
+  .sub{font-size:14px;color:#6B6F78;max-width:64ch;line-height:1.5;margin:2px 0 0;}
+  .legend{display:flex;align-items:center;gap:8px;margin:20px 0 24px;padding:10px 14px;background:#FFFFFF;border:1px solid var(--border);border-radius:10px;font-size:12.5px;color:#5A5E67;width:fit-content;}
+  .legend .swatch{width:22px;height:14px;border-radius:4px;border:1.5px dashed var(--tag);background:var(--tag-bg);flex:none;}
+
+  .frame-wrap{overflow-x:auto;border-radius:26px;}
+  .frame{position:relative;display:flex;width:1320px;min-height:900px;background:var(--ink);border-radius:26px;overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(15,17,25,.35), 0 2px 6px rgba(15,17,25,.15);}
+
+  /* Sidebar (unchanged from dashboard, Schedules active) */
+  .sidebar{width:240px;flex:none;background:var(--ink);display:flex;flex-direction:column;padding:24px 16px;gap:28px;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 0;}
+  .logo{font-weight:800;font-size:16px;letter-spacing:.01em;line-height:1.05;color:#fff;}
+  .logo b{color:var(--accent);}
+  .logo small{display:block;font-size:9.5px;font-weight:700;letter-spacing:.22em;color:#fff;margin-top:2px;}
+  .burger{width:32px;height:32px;border-radius:8px;background:var(--ink-soft);display:flex;align-items:center;justify-content:center;flex:none;}
+  .burger span{display:block;width:14px;height:1.6px;background:#8A8F9C;position:relative;}
+  .burger span::before,.burger span::after{content:"";position:absolute;left:0;width:14px;height:1.6px;background:#8A8F9C;}
+  .burger span::before{top:-4px;} .burger span::after{top:4px;}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3E5A6E;padding:0 8px;margin-bottom:10px;}
+  .nav{display:flex;flex-direction:column;gap:4px;}
+  .nav-item{position:relative;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;color:#9199A8;font-size:13.5px;font-weight:500;}
+  .nav-item .left{display:flex;align-items:center;gap:12px;}
+  .nav-item .ico{width:16px;height:16px;flex:none;opacity:.85;}
+  .nav-item.active{background:var(--accent);color:#fff;font-weight:600;}
+  .nav-item.active .ico{opacity:1;}
+  .badge-total{font-family:var(--font-mono);font-size:11px;font-weight:600;color:#fff;background:rgba(255,255,255,.22);border-radius:999px;padding:2px 8px;}
+  .badge-group{display:flex;align-items:center;gap:6px;}
+  .badge-due{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent);background:#fff;border-radius:999px;padding:2px 7px;}
+  .sidebar-spacer{flex:1;}
+  .profile{display:flex;align-items:center;gap:10px;background:var(--ink-soft);border-radius:16px;padding:10px;}
+  .avatar-jd{width:36px;height:36px;border-radius:12px;background:#33415A;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;}
+  .profile .who{flex:1;min-width:0;}
+  .profile .name{font-size:13px;font-weight:600;color:#fff;}
+  .profile .role{font-size:11px;color:#7C8492;}
+  .profile .exit{width:28px;height:28px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;color:#7C8492;}
+
+  /* Main content */
+  .main{flex:1;min-width:0;background:var(--canvas);padding:28px 32px;display:flex;flex-direction:column;gap:20px;}
+  .top-row{display:flex;align-items:flex-start;justify-content:space-between;}
+  .top-row h2{font-size:19px;font-weight:800;color:var(--text);margin:0 0 3px;}
+  .top-row p{font-size:12.5px;color:var(--text-muted);margin:0;}
+  .week-nav{display:flex;align-items:center;gap:10px;}
+  .week-btn{width:28px;height:28px;border-radius:7px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:#6B7280;font-size:12px;}
+  .week-range{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);}
+
+  .strip{display:flex;gap:10px;}
+  .day-col{flex:1;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;}
+  .day-col.active{background:var(--ink);border-color:var(--ink);}
+  .day-col .dow{font-size:10px;color:var(--text-faint);letter-spacing:.04em;}
+  .day-col.active .dow{color:#8A8F9C;}
+  .day-col .num{font-family:var(--font-mono);font-size:19px;font-weight:700;color:var(--text);margin:3px 0;}
+  .day-col.active .num{color:#fff;}
+  .day-col .jobs{font-size:9.5px;color:var(--text-muted);}
+  .day-col.active .jobs{color:#9199A8;}
+  .dots{display:flex;justify-content:center;gap:3px;margin-top:5px;}
+  .dot{width:5px;height:5px;border-radius:50%;}
+  .dot.good{background:#3FA866;} .dot.warn{background:#E39A3D;} .dot.off{background:#3A3D48;}
+  .strip-legend{display:flex;gap:14px;font-size:10.5px;color:var(--text-muted);padding:0 2px;}
+  .strip-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .strip-legend .dot{width:6px;height:6px;}
+
+  .banner{background:var(--banner-bg);border:1px solid var(--banner-line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+  .banner-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--banner-fg);}
+  .banner-list{display:flex;flex-direction:column;gap:6px;}
+  .banner-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.7);border-radius:10px;padding:8px 8px 8px 12px;}
+  .banner-row .label{font-size:12px;font-weight:600;color:var(--text);}
+  .banner-row .meta{font-size:11px;color:var(--banner-fg);}
+  .review{font-size:11px;font-weight:700;color:#fff;background:var(--status-warn-fg);border:1px solid var(--status-warn-fg);border-radius:8px;padding:6px 12px;white-space:nowrap;flex:none;cursor:pointer;}
+  .banner-row .review{color:#3B3F49;background:#fff;border-color:var(--border);font-weight:600;}
+  .review:hover{filter:brightness(0.95);}
+  .row-approved-note{font-size:11px;font-weight:600;color:var(--status-good-fg);white-space:nowrap;}
+
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px 20px 16px;display:flex;flex-direction:column;gap:14px;}
+  .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .panel-head h3{font-size:16px;font-weight:800;color:var(--text);margin:0 0 2px;}
+  .panel-head p{font-size:12px;color:var(--text-muted);margin:0;}
+  .tabs{display:flex;gap:6px;}
+  .tab{font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:8px;background:#fff;border:1px solid var(--border);color:#5A5E67;white-space:nowrap;}
+  .tab.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+
+  .group-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);display:flex;align-items:center;gap:10px;}
+  .group-label::after{content:"";flex:1;height:1px;background:var(--border);}
+  .job-row{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
+  .job-time{font-family:var(--font-mono);font-size:11.5px;color:var(--text-muted);width:66px;flex:none;}
+  .avatar{width:30px;height:30px;border-radius:9px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;}
+  .job-id{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);width:64px;flex:none;}
+  .job-info{flex:1;min-width:0;}
+  .job-info b{display:block;font-size:13px;font-weight:700;color:var(--text);}
+  .job-info span{font-size:11.5px;color:var(--text-muted);}
+  .pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;flex:none;}
+  .pill-good{background:var(--status-good-bg);color:var(--status-good-fg);}
+  .pill-warn{background:var(--status-warn-bg);color:var(--status-warn-fg);}
+  .pill-neutral{background:var(--status-neutral-bg);color:var(--status-neutral-fg);}
+  .view-docs{font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#fff;border:1px solid var(--border);color:#3B3F49;display:flex;align-items:center;gap:6px;white-space:nowrap;flex:none;}
+  .rows{display:flex;flex-direction:column;gap:8px;}
+
+  .tag{position:relative;}
+  .tag::before{content:"";position:absolute;inset:-6px;border:1.5px dashed var(--tag);border-radius:16px;pointer-events:none;}
+  .tag::after{content:"UPDATED";position:absolute;top:-9px;left:10px;background:var(--tag-bg);color:var(--tag);font-size:8.5px;font-weight:800;letter-spacing:.08em;padding:1px 5px;border-radius:4px;z-index:1;}
+
+  .modal-overlay{position:absolute;inset:0;background:rgba(14,16,22,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px;border-radius:26px;}
+  .modal-overlay[hidden]{display:none;}
+  .modal{background:#fff;border-radius:18px;width:100%;max-width:440px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 48px -12px rgba(15,17,25,.35);}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .modal-head h4{font-size:16px;font-weight:800;color:var(--text);margin:0 0 3px;}
+  .modal-head p{font-size:12px;color:var(--text-muted);margin:0;font-family:var(--font-mono);}
+  .modal-close{width:26px;height:26px;border-radius:8px;background:var(--canvas);display:flex;align-items:center;justify-content:center;color:#6B7280;flex:none;cursor:pointer;font-size:13px;}
+  .modal-section{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px;}
+  .checklist{display:flex;flex-direction:column;gap:7px;}
+  .checklist li{list-style:none;display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text);}
+  .checklist li::before{content:"✓";color:var(--status-good-fg);font-weight:700;flex:none;}
+  .modal-note{background:var(--canvas);border-radius:10px;padding:10px 12px;font-size:11.5px;color:#5A5E67;line-height:1.5;}
+  .modal-actions{display:flex;gap:8px;margin-top:4px;}
+  .modal-btn{flex:1;text-align:center;padding:10px 0;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid transparent;}
+  .modal-btn.approve{background:var(--status-good-fg);color:#fff;}
+  .modal-btn.changes{background:#fff;color:#3B3F49;border-color:var(--border);}
+  .modal-result{display:none;font-size:12px;font-weight:600;color:var(--status-good-fg);background:var(--status-good-bg);border-radius:10px;padding:9px 12px;text-align:center;}
+</style>
+
+<div class="page">
+  <div class="masthead">
+    <span class="eyebrow">Truland Homes · Supervisor App</span>
+    <h1>Schedules — proposed updates</h1>
+    <p class="sub">Same list and banner rebuild as before, now with the crew and timing gaps from the design review closed: who's on each job, when it starts, and how many bookings sit behind each filter.</p>
+  </div>
+
+  <div class="legend"><span class="swatch"></span> Dashed outline marks what changed in this mockup</div>
+
+  <div class="frame-wrap">
+  <div class="frame">
+
+    <aside class="sidebar">
+      <div class="brand-row">
+        <div class="logo"><b>TRU</b>LAND<small>HOMES</small></div>
+        <div class="burger"><span></span></div>
+      </div>
+      <div>
+        <div class="nav-label">Supervisor Portal</div>
+        <nav class="nav">
+          <div class="nav-item"><div class="left"><span class="ico">▦</span>Dashboard</div></div>
+          <div class="nav-item active">
+            <div class="left"><span class="ico">▤</span>Schedules</div>
+            <div class="badge-group"><span class="badge-due" id="due-badge">3 due</span><span class="badge-total">12</span></div>
+          </div>
+          <div class="nav-item"><div class="left"><span class="ico">▥</span>Timesheet</div></div>
+        </nav>
+      </div>
+      <div class="sidebar-spacer"></div>
+      <div class="profile">
+        <div class="avatar-jd">JD</div>
+        <div class="who"><div class="name">John Doe</div><div class="role">Site Supervisor · North</div></div>
+        <div class="exit">⇥</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="top-row">
+        <div><h2>Schedules</h2><p>15 bookings this week · 3 need approval</p></div>
+        <div class="week-nav"><span class="week-btn">‹</span><span class="week-range">17 — 23 AUG</span><span class="week-btn">›</span></div>
+      </div>
+
+      <div>
+        <div class="strip">
+          <div class="day-col"><div class="dow">MON</div><div class="num">17</div><div class="jobs">3 jobs</div><div class="dots"><span class="dot good"></span><span class="dot good"></span><span class="dot good"></span></div></div>
+          <div class="day-col active"><div class="dow">TUE</div><div class="num">18</div><div class="jobs">4 jobs</div><div class="dots"><span class="dot good"></span><span class="dot good"></span><span class="dot good"></span><span class="dot warn"></span></div></div>
+          <div class="day-col"><div class="dow">WED</div><div class="num">19</div><div class="jobs">2 jobs</div><div class="dots"><span class="dot warn"></span><span class="dot good"></span></div></div>
+          <div class="day-col"><div class="dow">THU</div><div class="num">20</div><div class="jobs">5 jobs</div><div class="dots"><span class="dot good"></span><span class="dot good"></span><span class="dot good"></span><span class="dot good"></span><span class="dot good"></span></div></div>
+          <div class="day-col"><div class="dow">FRI</div><div class="num">21</div><div class="jobs">1 job</div><div class="dots"><span class="dot warn"></span></div></div>
+          <div class="day-col"><div class="dow">SAT</div><div class="num">22</div><div class="jobs">—</div><div class="dots"><span class="dot off"></span></div></div>
+          <div class="day-col"><div class="dow">SUN</div><div class="num">23</div><div class="jobs">—</div><div class="dots"><span class="dot off"></span></div></div>
+        </div>
+        <div class="strip-legend" style="margin-top:8px;">
+          <span><span class="dot good"></span>On track</span>
+          <span><span class="dot warn"></span>Needs approval</span>
+          <span><span class="dot off"></span>No bookings</span>
+        </div>
+      </div>
+
+      <div class="banner" id="approval-banner">
+        <div class="banner-title">⚠️ <span id="banner-count">3</span> bookings need approval this week</div>
+        <div class="banner-list" id="banner-list">
+          <div class="banner-row" id="banner-row-bk-2847">
+            <div><div class="label">Frame inspection</div><div class="meta">Today · Lot 118 Ridgeline Blvd, Officer VIC</div></div>
+            <span class="review" onclick="openReview('bk-2847')">Review</span>
+          </div>
+          <div class="banner-row" id="banner-row-bk-waterproof">
+            <div><div class="label">Waterproofing check</div><div class="meta">Wed 19 Aug · Lot 118 Ridgeline Blvd, Officer VIC</div></div>
+            <span class="review" onclick="openReview('bk-waterproof')">Review</span>
+          </div>
+          <div class="banner-row" id="banner-row-bk-preplaster">
+            <div><div class="label">Pre-plaster walkthrough</div><div class="meta">Fri 21 Aug · Lot 07 Marlowe Rise, Tarneit VIC</div></div>
+            <span class="review" onclick="openReview('bk-preplaster')">Review</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Tuesday 18 August</h3><p>4 bookings · <span id="panel-need-count">1</span> needs approval · first at 8:30am</p></div>
+          <div class="tabs tag">
+            <span class="tab active">All · 4</span>
+            <span class="tab">Needs approval · <span id="tab-needs-count">1</span></span>
+            <span class="tab">Missing docs · 1</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="group-label">Morning</div>
+          <div class="rows" style="margin-top:10px;">
+            <div class="job-row">
+              <div class="job-time tag">8:30 AM</div>
+              <div class="job-id">BK-2841</div>
+              <div class="avatar tag" style="background:var(--av-1-bg);color:var(--av-1-fg);">JD</div>
+              <div class="job-info"><b>Client handover</b><span>Lot 42 Northmead Dr, Craigieburn VIC</span></div>
+              <span class="pill pill-good">Approved</span>
+              <span class="view-docs">📄 View docs</span>
+            </div>
+            <div class="job-row" id="row-bk-2847">
+              <div class="job-time tag">10:00 AM</div>
+              <div class="job-id">BK-2847</div>
+              <div class="avatar tag" style="background:var(--av-2-bg);color:var(--av-2-fg);">MK</div>
+              <div class="job-info"><b>Frame inspection</b><span>Lot 118 Ridgeline Blvd, Officer VIC</span></div>
+              <span class="pill pill-warn" id="pill-bk-2847">Needs approval</span>
+              <span class="review" id="row-review-bk-2847" onclick="openReview('bk-2847')" style="cursor:pointer;">Review</span>
+              <span class="view-docs">📄 View docs</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="group-label">Afternoon</div>
+          <div class="rows" style="margin-top:10px;">
+            <div class="job-row">
+              <div class="job-time tag">1:00 PM</div>
+              <div class="job-id">BK-2852</div>
+              <div class="avatar tag" style="background:var(--av-3-bg);color:var(--av-3-fg);">TP</div>
+              <div class="job-info"><b>Slab pour sign-off</b><span>Lot 07 Marlowe Rise, Tarneit VIC</span></div>
+              <span class="pill pill-neutral">Missing docs</span>
+              <span class="view-docs">📄 View docs</span>
+            </div>
+            <div class="job-row">
+              <div class="job-time tag">3:00 PM</div>
+              <div class="job-id">BK-2859</div>
+              <div class="avatar tag" style="background:var(--av-4-bg);color:var(--av-4-fg);">RS</div>
+              <div class="job-info"><b>Slab pour sign-off</b><span>Lot 09 Marlowe Rise, Tarneit VIC</span></div>
+              <span class="pill pill-good">Approved</span>
+              <span class="view-docs">📄 View docs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" hidden onclick="if(event.target===this)closeReview()">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h4 id="modal-title">Frame inspection</h4>
+        <p id="modal-meta">BK-2847 · Lot 118 Ridgeline Blvd, Officer VIC</p>
+      </div>
+      <span class="modal-close" onclick="closeReview()">✕</span>
+    </div>
+    <div>
+      <div class="modal-section">Submitted for approval</div>
+      <ul class="checklist" id="modal-checklist"></ul>
+    </div>
+    <div class="modal-note" id="modal-note"></div>
+    <div class="modal-actions" id="modal-actions">
+      <span class="modal-btn changes" onclick="requestChanges()">Request changes</span>
+      <span class="modal-btn approve" onclick="approveBooking()">Approve booking</span>
+    </div>
+    <div class="modal-result" id="modal-result"></div>
+  </div>
+</div>
+
+<script>
+  const REVIEWS = {
+    'bk-2847': {
+      title: 'Frame inspection', meta: 'BK-2847 · Lot 118 Ridgeline Blvd, Officer VIC · Today 10:00 AM · Crew MK',
+      checklist: ['Frame alignment verified against plan', 'Bracing installed per engineering spec', 'Site photos attached (6)'],
+      note: 'Submitted by crew this morning. No prior flags on this lot.'
+    },
+    'bk-waterproof': {
+      title: 'Waterproofing check', meta: 'Lot 118 Ridgeline Blvd, Officer VIC · Wed 19 Aug',
+      checklist: ['Membrane continuity photos attached', 'Penetration seals checked', 'Drainage fall confirmed'],
+      note: 'Second waterproofing check on this lot this month.'
+    },
+    'bk-preplaster': {
+      title: 'Pre-plaster walkthrough', meta: 'Lot 07 Marlowe Rise, Tarneit VIC · Fri 21 Aug',
+      checklist: ['Electrical rough-in signed off', 'Plumbing rough-in signed off', 'Insulation photos attached'],
+      note: 'All trade sign-offs received; awaiting your walkthrough approval.'
+    }
+  };
+  let currentReview = null;
+  let dueCount = 3;
+
+  function openReview(id){
+    const r = REVIEWS[id];
+    if(!r) return;
+    currentReview = id;
+    document.getElementById('modal-title').textContent = r.title;
+    document.getElementById('modal-meta').textContent = r.meta;
+    document.getElementById('modal-checklist').innerHTML = r.checklist.map(c => `<li>${c}</li>`).join('');
+    document.getElementById('modal-note').textContent = r.note;
+    document.getElementById('modal-actions').style.display = 'flex';
+    document.getElementById('modal-result').style.display = 'none';
+    document.getElementById('modalOverlay').hidden = false;
+  }
+  function closeReview(){
+    document.getElementById('modalOverlay').hidden = true;
+    currentReview = null;
+  }
+  function updateApprovalCounts(){
+    dueCount = Math.max(0, dueCount - 1);
+    document.getElementById('due-badge').textContent = dueCount + ' due';
+    document.getElementById('banner-count').textContent = dueCount;
+    const needCountEls = [document.getElementById('panel-need-count'), document.getElementById('tab-needs-count')];
+    needCountEls.forEach(el => { if(el) el.textContent = Math.max(0, parseInt(el.textContent,10) - 1); });
+    if(dueCount === 0){
+      const banner = document.getElementById('approval-banner');
+      if(banner) banner.style.display = 'none';
+    }
+  }
+  function approveBooking(){
+    if(!currentReview) return;
+    const row = document.getElementById('banner-row-' + currentReview);
+    if(row) row.remove();
+    if(currentReview === 'bk-2847'){
+      const pill = document.getElementById('pill-bk-2847');
+      if(pill){ pill.textContent = 'Approved'; pill.className = 'pill pill-good'; }
+      const reviewBtn = document.getElementById('row-review-bk-2847');
+      if(reviewBtn) reviewBtn.remove();
+    }
+    updateApprovalCounts();
+    document.getElementById('modal-actions').style.display = 'none';
+    const result = document.getElementById('modal-result');
+    result.textContent = '✓ Approved — crew notified';
+    result.style.background = 'var(--status-good-bg)';
+    result.style.color = 'var(--status-good-fg)';
+    result.style.display = 'block';
+    setTimeout(closeReview, 900);
+  }
+  function requestChanges(){
+    if(!currentReview) return;
+    const row = document.getElementById('banner-row-' + currentReview);
+    if(row) row.style.opacity = '0.55';
+    if(currentReview === 'bk-2847'){
+      const pill = document.getElementById('pill-bk-2847');
+      if(pill){ pill.textContent = 'Changes requested'; pill.className = 'pill pill-neutral'; }
+    }
+    document.getElementById('modal-actions').style.display = 'none';
+    const result = document.getElementById('modal-result');
+    result.textContent = '↩ Changes requested — crew notified, stays in your queue';
+    result.style.background = 'var(--status-warn-bg)';
+    result.style.color = 'var(--status-warn-fg)';
+    result.style.display = 'block';
+    setTimeout(closeReview, 1100);
+  }
+</script>

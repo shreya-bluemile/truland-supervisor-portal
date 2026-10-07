@@ -1,0 +1,156 @@
+<title>Rail Style Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --ink:#0E1016; --ink-soft:#1B1D26; --ink-line:#2A2D38;
+    --canvas:#E8EBEF; --surface:#FFFFFF; --border:#E1E4E9;
+    --text:#10131A; --text-muted:#8B92A1; --text-faint:#AEB4BE;
+    --accent:#FF1E32;
+    --status-warn-bg:#FCEAD1; --status-warn-fg:#B35A0B;
+    --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--canvas);color:var(--text);font-family:var(--font-body);}
+  .page{max-width:1400px;margin:0 auto;padding:32px 24px 60px;}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);}
+  h1{font-size:24px;font-weight:800;margin:4px 0 4px;color:#171A21;}
+  .sub{font-size:13.5px;color:#6B6F78;max-width:70ch;line-height:1.5;margin:0 0 28px;}
+
+  .grid{display:flex;gap:20px;flex-wrap:wrap;}
+  .option{display:flex;flex-direction:column;gap:10px;}
+  .option-label{font-size:12.5px;font-weight:700;color:var(--text);}
+  .option-desc{font-size:11.5px;color:var(--text-muted);max-width:305px;line-height:1.4;margin-bottom:2px;}
+
+  .rail{width:305px;flex:none;padding:22px 18px;display:flex;flex-direction:column;gap:16px;border-radius:0 20px 20px 0;box-shadow:0 12px 30px -14px rgba(15,17,25,.25);}
+  .rail-time{font-size:10.5px;color:var(--text-muted);}
+  .rail h2{font-size:18px;font-weight:800;margin:0;letter-spacing:-.01em;color:var(--text);}
+  .btn-shift{background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:9px 0;border-radius:10px;text-align:center;}
+
+  .weather-card{background:linear-gradient(160deg,#2E4E74 0%,#1B2E45 45%,var(--ink) 100%);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;color:#fff;position:relative;overflow:hidden;}
+  .weather-card::after{content:"";position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 70%);}
+  .weather-eyebrow{font-size:9px;font-weight:700;letter-spacing:.1em;color:#7C8492;}
+  .weather-place{font-size:10.5px;color:#AEB4BE;}
+  .weather-now{display:flex;align-items:center;gap:10px;}
+  .weather-icon{font-size:26px;line-height:1;}
+  .weather-temp{font-family:var(--font-mono);font-size:22px;font-weight:700;color:#fff;}
+  .weather-desc{font-size:11px;color:#C7CBD3;}
+
+  .warn-box{background:var(--status-warn-bg);border:1px solid #F0D9AE;border-radius:10px;padding:9px 10px;font-size:10.5px;color:var(--status-warn-fg);line-height:1.45;display:flex;gap:6px;}
+
+  .forecast{display:flex;justify-content:space-between;gap:5px;}
+  .forecast .day{flex:1;background:#fff;border:1px solid var(--border);border-radius:9px;padding:6px 3px;text-align:center;}
+  .forecast .day b{display:block;font-size:8.5px;color:var(--text-faint);}
+  .forecast .day .ic{font-size:13px;margin:3px 0;}
+  .forecast .day span{font-family:var(--font-mono);font-size:9px;color:var(--text-muted);}
+  .forecast .day.sunny{background:#FDF1DC;border-color:#F3DFB1;}
+  .forecast .day.sunny b{color:#B3811A;}
+  .forecast .day.cloudy{background:#E9EEF5;border-color:#D6DFEC;}
+  .forecast .day.cloudy b{color:#6C7C93;}
+  .forecast .day.rain{background:#E3EBFC;border-color:#C9D8F2;}
+  .forecast .day.rain b{color:#4C63A8;}
+
+  /* A — white + accent top rule */
+  .rail-a{background:#fff;border-top:3px solid var(--accent);}
+  /* B — cool sky tint, echoes the weather card */
+  .rail-b{background:linear-gradient(180deg,#EEF3FB 0%,#E7EEF9 100%);border-left:1px solid #D8E2F1;}
+  /* C — warm neutral sand, not white, not gray, not red */
+  .rail-c{background:#F7F1E8;border-left:1px solid #EDE2D0;}
+  /* D — white + bold accent left border (no wash) */
+  .rail-d{background:#fff;border-left:4px solid var(--accent);}
+</style>
+
+<div class="page">
+  <span class="eyebrow">Truland Homes · Supervisor App</span>
+  <h1>Right rail — style options</h1>
+  <p class="sub">Same content, four different treatments for the panel itself. Two lean on a full background tint (B, C), two keep it white/neutral and add a single accent detail instead (A, D).</p>
+
+  <div class="grid">
+
+    <div class="option">
+      <div class="option-label">A — White + accent top rule</div>
+      <div class="option-desc">Neutral panel, one thin red rule along the top ties it to the brand without tinting the whole surface.</div>
+      <div class="rail rail-a">
+        <div class="rail-time">Tue 18 Aug 2026 · 7:42 am</div>
+        <h2>Good morning,<br>John</h2>
+        <div class="btn-shift">Start shift</div>
+        <div class="weather-card">
+          <div><div class="weather-eyebrow">TODAY'S WEATHER</div><div class="weather-place">Craigieburn VIC</div></div>
+          <div class="weather-now"><span class="weather-icon">⛅</span><div class="weather-temp">14°C</div></div>
+          <div class="weather-desc">Partly cloudy, clearing by noon</div>
+        </div>
+        <div class="warn-box">⚠️ Wind gusts to 45 km/h after 3pm.</div>
+        <div class="forecast">
+          <div class="day sunny"><b>WED</b><div class="ic">☀️</div><span>25/13</span></div>
+          <div class="day cloudy"><b>THU</b><div class="ic">⛅</div><span>22/11</span></div>
+          <div class="day rain"><b>FRI</b><div class="ic">🌧️</div><span>18/10</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option">
+      <div class="option-label">B — Cool sky tint</div>
+      <div class="option-desc">Very light blue wash that echoes the weather card's own gradient — reads as "this panel is about site conditions," not an alert.</div>
+      <div class="rail rail-b">
+        <div class="rail-time">Tue 18 Aug 2026 · 7:42 am</div>
+        <h2>Good morning,<br>John</h2>
+        <div class="btn-shift">Start shift</div>
+        <div class="weather-card">
+          <div><div class="weather-eyebrow">TODAY'S WEATHER</div><div class="weather-place">Craigieburn VIC</div></div>
+          <div class="weather-now"><span class="weather-icon">⛅</span><div class="weather-temp">14°C</div></div>
+          <div class="weather-desc">Partly cloudy, clearing by noon</div>
+        </div>
+        <div class="warn-box">⚠️ Wind gusts to 45 km/h after 3pm.</div>
+        <div class="forecast">
+          <div class="day sunny"><b>WED</b><div class="ic">☀️</div><span>25/13</span></div>
+          <div class="day cloudy"><b>THU</b><div class="ic">⛅</div><span>22/11</span></div>
+          <div class="day rain"><b>FRI</b><div class="ic">🌧️</div><span>18/10</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option">
+      <div class="option-label">C — Warm sand neutral</div>
+      <div class="option-desc">A muted warm tone (not white, not gray, not red/pink) — gives depth without reading as a status or alert color.</div>
+      <div class="rail rail-c">
+        <div class="rail-time">Tue 18 Aug 2026 · 7:42 am</div>
+        <h2>Good morning,<br>John</h2>
+        <div class="btn-shift">Start shift</div>
+        <div class="weather-card">
+          <div><div class="weather-eyebrow">TODAY'S WEATHER</div><div class="weather-place">Craigieburn VIC</div></div>
+          <div class="weather-now"><span class="weather-icon">⛅</span><div class="weather-temp">14°C</div></div>
+          <div class="weather-desc">Partly cloudy, clearing by noon</div>
+        </div>
+        <div class="warn-box">⚠️ Wind gusts to 45 km/h after 3pm.</div>
+        <div class="forecast">
+          <div class="day sunny"><b>WED</b><div class="ic">☀️</div><span>25/13</span></div>
+          <div class="day cloudy"><b>THU</b><div class="ic">⛅</div><span>22/11</span></div>
+          <div class="day rain"><b>FRI</b><div class="ic">🌧️</div><span>18/10</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option">
+      <div class="option-label">D — White + bold accent edge</div>
+      <div class="option-desc">Fully neutral panel, one bold red seam where it meets the main content — the strongest brand presence with zero background tinting.</div>
+      <div class="rail rail-d">
+        <div class="rail-time">Tue 18 Aug 2026 · 7:42 am</div>
+        <h2>Good morning,<br>John</h2>
+        <div class="btn-shift">Start shift</div>
+        <div class="weather-card">
+          <div><div class="weather-eyebrow">TODAY'S WEATHER</div><div class="weather-place">Craigieburn VIC</div></div>
+          <div class="weather-now"><span class="weather-icon">⛅</span><div class="weather-temp">14°C</div></div>
+          <div class="weather-desc">Partly cloudy, clearing by noon</div>
+        </div>
+        <div class="warn-box">⚠️ Wind gusts to 45 km/h after 3pm.</div>
+        <div class="forecast">
+          <div class="day sunny"><b>WED</b><div class="ic">☀️</div><span>25/13</span></div>
+          <div class="day cloudy"><b>THU</b><div class="ic">⛅</div><span>22/11</span></div>
+          <div class="day rain"><b>FRI</b><div class="ic">🌧️</div><span>18/10</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

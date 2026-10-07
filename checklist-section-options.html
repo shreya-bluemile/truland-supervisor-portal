@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist Section Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#e9ebee; --card:#fff; --soft:#f5f6f7; --line:#e3e5e8; --line-strong:#d3d6da;
+    --text:#16181c; --muted:#6b7078; --faint:#a3a8af;
+    --red:#ee1c2e; --red-soft:#fde8ea; --red-line:#f7c6cc;
+    --green:#1f8a5b; --green-soft:#e3f4ec;
+    --amber:#c77d0a; --amber-soft:#fdf3e1; --amber-line:#f3d9a8;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;padding:28px 16px 60px;}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:left;}
+  svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+  .wrap{max-width:760px;margin:0 auto;}
+  .intro h1{font-size:20px;font-weight:700;margin-bottom:6px;}
+  .intro p{color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:26px;}
+
+  .opt{margin-bottom:40px;}
+  .opt-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+  .opt-letter{font-size:11px;font-weight:700;background:var(--text);color:#fff;border-radius:5px;padding:2px 7px;}
+  .opt-head h2{font-size:15px;font-weight:600;}
+  .opt-desc{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:12px;}
+  .opt-desc b{color:var(--text);font-weight:600;}
+
+  /* Shared card chrome — same as the detail page cards */
+  .card{background:var(--card);border-radius:var(--radius);padding:16px;}
+  .card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .card-head h3{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .count{font-size:10px;font-weight:600;color:var(--muted);background:var(--soft);border-radius:4px;padding:1px 6px;}
+  .head-meta{margin-left:auto;font-size:10.5px;color:var(--muted);}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:7px;padding:6px 10px;font-size:11px;font-weight:600;background:#fff;}
+  .btn:hover{background:var(--soft);}
+
+  .ans{display:inline-block;font-size:10.5px;font-weight:600;border-radius:4px;padding:2px 8px;min-width:34px;text-align:center;}
+  .ans.good{background:var(--green-soft);color:var(--green);}
+  .ans.bad{background:var(--red-soft);color:var(--red);}
+  .ans.neutral{background:var(--soft);color:var(--text);}
+  .av{width:22px;height:22px;border-radius:50%;color:#fff;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+  .sub{font-size:10.5px;color:var(--muted);}
+  .note{font-size:11px;line-height:1.45;background:var(--soft);border-radius:6px;padding:7px 9px;margin-top:7px;}
+  .files{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;}
+  .file{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:10.5px;font-weight:600;background:#fff;}
+  .file svg{color:var(--red);width:12px;height:12px;}
+  .photos{display:flex;gap:6px;margin-top:7px;}
+  .photo{width:44px;height:44px;border-radius:6px;background:#dfe3e7;color:#9aa1a9;display:flex;align-items:center;justify-content:center;}
+  .resp{display:flex;gap:10px;padding:10px 0;}
+  .resp + .resp{border-top:1px dashed var(--line-strong);}
+  .resp-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;}
+  .resp-head b{font-weight:600;}
+  .tag{font-size:9.5px;font-weight:500;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;}
+
+  /* ── B: tile grid ── */
+  .b-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .b-tile{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:86px;}
+  .b-tile:hover{border-color:var(--faint);}
+  .b-tile.flag{background:var(--red-soft);border-color:var(--red-line);}
+  .b-tile.mixed{background:var(--amber-soft);border-color:var(--amber-line);}
+  .b-tile.sel{outline:2px solid var(--text);outline-offset:-1px;}
+  .b-q{font-size:11.5px;font-weight:500;line-height:1.35;}
+  .b-q span{color:var(--faint);font-weight:600;margin-right:3px;}
+  .b-foot{margin-top:auto;display:flex;align-items:center;gap:8px;}
+  .b-foot .sub{margin-left:auto;display:inline-flex;align-items:center;gap:3px;}
+  .b-foot .sub svg{width:11px;height:11px;}
+  .b-detail{margin-top:10px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;}
+  .b-detail-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;margin-bottom:2px;}
+  .b-detail-head button{margin-left:auto;color:var(--muted);}
+
+  /* ── C: issues first ── */
+  .c-alert{display:flex;align-items:center;gap:10px;background:var(--red-soft);color:var(--red);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:600;margin-bottom:10px;}
+  .c-alert .ic{width:24px;height:24px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;}
+  .c-alert .ic svg{width:12px;height:12px;stroke-width:2.5;}
+  .c-alert .sub{color:#c0525c;font-weight:400;margin-left:auto;}
+  .c-issue{border:1px solid var(--line);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:8px;}
+  .c-issue.mixed{border-left-color:var(--amber);}
+  .c-issue-top{display:flex;align-items:flex-start;gap:10px;}
+  .c-issue-q{flex:1;font-size:12px;font-weight:600;line-height:1.35;}
+  .c-issue-q small{display:block;font-weight:400;font-size:10.5px;color:var(--muted);margin-top:3px;}
+  .c-why{font-size:10px;font-weight:600;border-radius:4px;padding:2px 6px;}
+  .c-why.flag{background:var(--red-soft);color:var(--red);}
+  .c-why.mixed{background:var(--amber-soft);color:var(--amber);}
+  .c-latest{display:flex;gap:8px;margin-top:10px;}
+  .c-more{margin-top:8px;font-size:10.5px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:4px;}
+  .c-more:hover{color:var(--text);}
+  .c-more svg{width:11px;height:11px;transition:transform .15s;}
+  .c-more.open svg{transform:rotate(180deg);}
+  .c-older{margin-top:4px;padding-left:30px;}
+  .c-rest-head{display:flex;align-items:center;gap:8px;margin:16px 0 8px;font-size:11.5px;font-weight:600;}
+  .c-rest-head .ok{width:20px;height:20px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;}
+  .c-rest-head .ok svg{width:11px;height:11px;stroke-width:2.5;}
+  .c-rest{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;}
+  .c-rest-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:11px;}
+  .c-rest-row span:first-child{flex:1;min-width:0;}
+  .c-rest-row .n{color:var(--faint);font-weight:600;margin-right:3px;}
+
+  /* ── D: answer matrix ── */
+  .d-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .d-table th{background:var(--soft);font-size:10px;font-weight:500;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);}
+  .d-table th.p{text-align:center;width:74px;}
+  .d-person{display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .d-person b{font-size:10px;font-weight:600;color:var(--text);}
+  .d-table td{padding:8px 10px;border-bottom:1px solid var(--line);font-size:11.5px;vertical-align:middle;}
+  .d-table tr:last-child td{border-bottom:none;}
+  .d-num{color:var(--faint);font-weight:600;width:28px;}
+  .d-q{line-height:1.35;}
+  .d-q .flagtxt{display:inline-block;font-size:9.5px;font-weight:600;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:1px;}
+  .d-q .flagtxt.flag{background:var(--red-soft);color:var(--red);}
+  .d-q .flagtxt.mixed{background:var(--amber-soft);color:var(--amber);}
+  .d-cell{text-align:center;}
+  .d-cellbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:2px;border-radius:6px;}
+  .d-cellbtn:hover{background:var(--soft);}
+  .d-cellbtn.sel{outline:2px solid var(--text);}
+  .d-dot{position:absolute;top:-2px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;}
+  .d-dot svg{width:8px;height:8px;stroke-width:3;}
+  .d-none{color:var(--faint);}
+  .d-latest{box-shadow:inset 0 -2px 0 var(--text);}
+  .d-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:10.5px;color:var(--muted);}
+  .d-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .d-pop{margin-top:10px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;}
+  .d-flagrow td{background:#fffafa;}
+
+  @media (max-width:600px){
+    .b-grid,.c-rest{grid-template-columns:1fr;}
+    .d-table th.p{width:52px;}
+    .d-person b{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1>Handover checklist — section options</h1>
+    <p>Three different ways to show the filled checklist as a section on the detail page. All use the same answers: 10 questions, 3 people. Everything is clickable.</p>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head"><span class="opt-letter">B</span><h2>Answer tiles</h2></div>
+    <p class="opt-desc">Every question as a small tile in a 2-column grid, coloured by result. <b>You see all 10 answers at once without scrolling far.</b> Tap a tile to see who answered and what they attached, right under the grid.</p>
+    <section class="card">
+      <div class="card-head"><h3>Handover checklist <span class="count">10</span></h3><span class="head-meta">2 flagged · 1 mixed · updated 13-08-2026</span></div>
+      <div id="opt-b"></div>
+    </section>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head"><span class="opt-letter">C</span><h2>Issues first</h2></div>
+    <p class="opt-desc">Problems go at the top, already open with the note, files and photos showing. <b>Everything that went fine collapses into a short two-column list underneath.</b> Best if supervisors mainly care about what went wrong.</p>
+    <section class="card">
+      <div class="card-head"><h3>Handover checklist <span class="count">10</span></h3><span class="head-meta">Updated 13-08-2026</span></div>
+      <div id="opt-c"></div>
+    </section>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head"><span class="opt-letter">D</span><h2>Answer table</h2></div>
+    <p class="opt-desc">A table with one column per person, so <b>you can see straight away where people disagreed.</b> A small dot marks answers with a note or files; tap the answer to read it.</p>
+    <section class="card">
+      <div class="card-head"><h3>Handover checklist <span class="count">10</span></h3><span class="head-meta">Updated 13-08-2026</span></div>
+      <div id="opt-d"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+  const PEOPLE = {
+    'Mike T':  { i: 'MT', c: '#e08a00' },
+    'Priya R': { i: 'PR', c: '#d9467a' },
+    'Sarah K': { i: 'SK', c: '#3f6fd8' },
+  };
+  // good = expected answer (null = informational). Responses newest first.
+  const Q = [
+    { n: 1, t: 'Site left clean and all rubbish removed?', good: 'Yes', r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM' } ] },
+    { n: 2, t: 'Was the client present at handover?', good: 'Yes', r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM', note: 'Skip bin not collected, contractor booked for Tue.' },
+      { w: 'Priya R', a: 'No', d: '11-08-2026, 03:10 PM' },
+      { w: 'Sarah K', a: 'Yes', d: '10-08-2026, 12:00 PM', tags: ['Edited'] } ] },
+    { n: 3, t: 'Finish matches the agreed specification?', good: 'Yes', r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM' },
+      { w: 'Sarah K', a: 'Yes', d: '10-08-2026, 12:00 PM' } ] },
+    { n: 4, t: 'Was access to the site delayed?', good: 'No', r: [
+      { w: 'Mike T', a: 'No', d: '13-08-2026, 02:20 PM' },
+      { w: 'Priya R', a: 'No', d: '11-08-2026, 03:10 PM' } ] },
+    { n: 5, t: 'Were any defects found in the contractor work?', good: 'No', r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM', files: ['Permit.pdf', 'Insurance.pdf'] },
+      { w: 'Priya R', a: 'No', d: '11-08-2026, 03:10 PM' },
+      { w: 'Sarah K', a: 'Yes', d: '10-08-2026, 12:00 PM', photos: 3 } ] },
+    { n: 6, t: 'Was there a safety incident?', good: 'No', r: [
+      { w: 'Mike T', a: 'No', d: '13-08-2026, 02:20 PM' } ] },
+    { n: 7, t: 'Was a permit needed for this job?', good: null, r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM', files: ['Permit.pdf'] },
+      { w: 'Sarah K', a: 'Yes', d: '10-08-2026, 12:00 PM' } ] },
+    { n: 8, t: 'Safety barriers and signage in position?', good: 'Yes', r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM' } ] },
+    { n: 9, t: 'Is the area safe to hand back?', good: 'Yes', r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM' } ] },
+    { n: 10, t: 'Was any damage found on site?', good: 'No', r: [
+      { w: 'Mike T', a: 'Yes', d: '13-08-2026, 02:20 PM', note: 'Scuff on garage door frame — touch-up booked.', photos: 2 },
+      { w: 'Priya R', a: 'No', d: '11-08-2026, 03:10 PM' } ] },
+  ];
+
+  const I = {
+    check: '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
+    alert: '<svg viewBox="0 0 24 24"><path d="M12 7v6M12 17h.01"/></svg>',
+    clip: '<svg viewBox="0 0 24 24"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg>',
+    pdf: '<svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+    img: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>',
+    x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+    more: '<svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>',
+  };
+
+  const status = q => (q.good && q.r[0].a !== q.good) ? 'flag' : (new Set(q.r.map(x => x.a)).size > 1 ? 'mixed' : 'ok');
+  const fileCount = q => q.r.reduce((t, x) => t + (x.files ? x.files.length : 0) + (x.photos || 0), 0);
+  const pill = (a, good) => `<span class="ans ${good ? (a === good ? 'good' : 'bad') : 'neutral'}">${a}</span>`;
+  const av = w => `<span class="av" style="background:${PEOPLE[w].c}" title="${w}">${PEOPLE[w].i}</span>`;
+  const attachments = x => `
+    ${x.note ? `<div class="note"><b>Note:</b> ${x.note}</div>` : ''}
+    ${x.files ? `<div class="files">${x.files.map(f => `<span class="file">${I.pdf}${f}<span class="sub">1.2 MB</span></span>`).join('')}</div>` : ''}
+    ${x.photos ? `<div class="photos">${Array.from({ length: x.photos }, () => `<span class="photo">${I.img}</span>`).join('')}</div>` : ''}`;
+  const response = (x, i, q) => `<div class="resp">${av(x.w)}<div style="flex:1;min-width:0">
+      <div class="resp-head"><b>${x.w}</b>${pill(x.a, q.good)}<span class="sub">${x.d}</span>
+        ${i === 0 && q.r.length > 1 ? '<span class="tag">Latest</span>' : ''}${(x.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      ${attachments(x)}</div></div>`;
+
+  /* ── B: tiles ── */
+  let bSel = 5;
+  function renderB(){
+    const sel = Q.find(q => q.n === bSel);
+    document.getElementById('opt-b').innerHTML = `
+      <div class="b-grid">${Q.map(q => {
+        const s = status(q), f = fileCount(q);
+        return `<button class="b-tile ${s} ${q.n === bSel ? 'sel' : ''}" onclick="bPick(${q.n})">
+          <div class="b-q"><span>${q.n}</span>${q.t}</div>
+          <div class="b-foot">${pill(q.r[0].a, q.good)}
+            ${s === 'mixed' ? '<span class="sub" style="margin-left:0;color:var(--amber);font-weight:600">Answers differ</span>' : ''}
+            <span class="sub">${f ? `${I.clip}${f} · ` : ''}${q.r.length} resp.</span></div>
+        </button>`;
+      }).join('')}</div>
+      ${sel ? `<div class="b-detail">
+        <div class="b-detail-head"><span style="color:var(--faint)">${sel.n}.</span> ${sel.t}<button onclick="bPick(0)" aria-label="Close">${I.x}</button></div>
+        ${sel.r.map((x, i) => response(x, i, sel)).join('')}
+      </div>` : ''}`;
+  }
+  function bPick(n){ bSel = bSel === n ? 0 : n; renderB(); }
+
+  /* ── C: issues first ── */
+  const cOpen = new Set();
+  function renderC(){
+    const issues = [...Q.filter(q => status(q) === 'flag'), ...Q.filter(q => status(q) === 'mixed')];
+    const flagged = issues.filter(q => status(q) === 'flag').length;
+    const rest = Q.filter(q => status(q) === 'ok');
+    document.getElementById('opt-c').innerHTML = `
+      <div class="c-alert"><span class="ic">${I.alert}</span>${flagged} answers need attention<span class="sub">${issues.length - flagged} with mixed answers</span></div>
+      ${issues.map(q => {
+        const s = status(q), x = q.r[0], open = cOpen.has(q.n), older = q.r.slice(1);
+        return `<div class="c-issue ${s}">
+          <div class="c-issue-top">
+            <div class="c-issue-q">${q.n}. ${q.t}<small>${s === 'flag' ? `Expected “${q.good}”` : 'People gave different answers'} · ${q.r.length} responses</small></div>
+            <span class="c-why ${s}">${s === 'flag' ? 'Flagged' : 'Mixed'}</span>
+          </div>
+          <div class="c-latest">${av(x.w)}<div style="flex:1;min-width:0">
+            <div class="resp-head"><b>${x.w}</b>${pill(x.a, q.good)}<span class="sub">${x.d}</span><span class="tag">Latest</span></div>
+            ${attachments(x)}</div></div>
+          ${older.length ? `<button class="c-more ${open ? 'open' : ''}" onclick="cToggle(${q.n})">${open ? 'Hide' : 'Show'} ${older.length} earlier response${older.length > 1 ? 's' : ''} ${I.down}</button>
+            ${open ? `<div class="c-older">${older.map((r, i) => response(r, i + 1, q)).join('')}</div>` : ''}` : ''}
+        </div>`;
+      }).join('')}
+      <div class="c-rest-head"><span class="ok">${I.check}</span>${rest.length} answered as expected</div>
+      <div class="c-rest">${rest.map(q => `<div class="c-rest-row"><span><span class="n">${q.n}.</span>${q.t}</span>${fileCount(q) ? `<span class="sub" style="display:inline-flex;gap:2px;align-items:center">${I.clip}${fileCount(q)}</span>` : ''}${pill(q.r[0].a, q.good)}</div>`).join('')}</div>`;
+  }
+  function cToggle(n){ cOpen.has(n) ? cOpen.delete(n) : cOpen.add(n); renderC(); }
+
+  /* ── D: matrix ── */
+  let dSel = { n: 5, w: 'Sarah K' };
+  function renderD(){
+    const names = Object.keys(PEOPLE);
+    const last = w => { const d = Q.flatMap(q => q.r.filter(x => x.w === w).map(x => x.d.split(',')[0])); return d.sort().reverse()[0]; };
+    const selQ = dSel && Q.find(q => q.n === dSel.n);
+    const selR = selQ && selQ.r.find(x => x.w === dSel.w);
+    document.getElementById('opt-d').innerHTML = `
+      <table class="d-table">
+        <thead><tr><th colspan="2">Question</th>${names.map(w => `<th class="p"><div class="d-person">${av(w)}<b>${w}</b></div></th>`).join('')}</tr></thead>
+        <tbody>${Q.map(q => {
+          const s = status(q);
+          return `<tr class="${s === 'flag' ? 'd-flagrow' : ''}"><td class="d-num">${q.n}</td>
+            <td class="d-q">${q.t}${s !== 'ok' ? `<span class="flagtxt ${s}">${s === 'flag' ? 'Flagged' : 'Mixed'}</span>` : ''}</td>
+            ${names.map(w => {
+              const x = q.r.find(r => r.w === w);
+              if (!x) return `<td class="d-cell"><span class="d-none">–</span></td>`;
+              const extra = x.note || x.files || x.photos;
+              const isSel = dSel && dSel.n === q.n && dSel.w === w;
+              const isLatest = q.r[0] === x && q.r.length > 1;
+              return `<td class="d-cell"><button class="d-cellbtn ${isSel ? 'sel' : ''}" onclick="dPick(${q.n},'${w}')" title="${x.d}${isLatest ? ' · latest' : ''}">
+                <span class="${isLatest ? 'd-latest' : ''}">${pill(x.a, q.good)}</span>${extra ? `<span class="d-dot">${I.more}</span>` : ''}</button></td>`;
+            }).join('')}</tr>`;
+        }).join('')}</tbody>
+      </table>
+      <div class="d-legend">
+        <span><span class="ans good">Yes</span> expected answer</span>
+        <span><span class="ans bad">Yes</span> not expected</span>
+        <span><span class="d-dot" style="position:static">${I.more}</span> has note or files</span>
+        <span><span class="d-latest" style="padding:0 4px">Yes</span> latest answer</span>
+      </div>
+      ${selR ? `<div class="d-pop">
+        <div class="b-detail-head"><span style="color:var(--faint)">${selQ.n}.</span> ${selQ.t}<button onclick="dPick(0)" aria-label="Close">${I.x}</button></div>
+        ${response(selR, selQ.r.indexOf(selR), selQ)}
+      </div>` : ''}`;
+  }
+  function dPick(n, w){ dSel = (!n || (dSel && dSel.n === n && dSel.w === w)) ? null : { n, w }; renderD(); }
+
+  renderB(); renderC(); renderD();
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<title>Timesheet — 3 Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --ink:#0E1016; --ink-soft:#1B1D26;
+    --canvas:#E8EBEF; --surface:#FFFFFF; --border:#E1E4E9;
+    --text:#10131A; --text-muted:#8B92A1; --text-faint:#AEB4BE;
+    --accent:#FF1E32;
+    --status-good-bg:#DFF3E3; --status-good-fg:#1C7A43;
+    --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{background:#F3F4F6;color:var(--text);font-family:var(--font-body);}
+  .page{max-width:1400px;margin:0 auto;padding:32px 24px 60px;}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);}
+  h1{font-size:24px;font-weight:800;margin:4px 0 8px;color:#171A21;}
+  .sub{font-size:13.5px;color:#6B6F78;max-width:80ch;line-height:1.55;margin:0 0 30px;}
+  .grid{display:flex;gap:22px;align-items:flex-start;overflow-x:auto;padding-bottom:20px;}
+  .col{width:380px;flex:none;}
+  .col-label{font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px;}
+  .col-desc{font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-bottom:14px;min-height:64px;}
+  .frame{background:var(--canvas);border-radius:20px;box-shadow:0 20px 44px -20px rgba(15,17,25,.3);overflow:hidden;padding:18px;}
+
+  .panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px 18px;}
+  .top-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+  .top-row h2{font-size:17px;font-weight:800;color:var(--text);margin:0 0 3px;}
+  .top-row p{font-size:11px;color:var(--text-muted);margin:0;}
+  .btn-dark{font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;background:var(--ink);color:#fff;white-space:nowrap;}
+
+  /* ============ CONCEPT A — Clean table (closest to your first reference) ============ */
+  .a-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .a-table th{text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);padding:0 6px 8px;border-bottom:1px solid var(--border);}
+  .a-table td{padding:11px 6px;border-bottom:1px solid #F0F1F3;vertical-align:middle;}
+  .a-table tr:last-child td{border-bottom:none;}
+  .a-day b{display:block;font-size:12px;font-weight:700;color:var(--text);}
+  .a-day span{font-size:10px;color:var(--text-faint);}
+  .a-time{font-family:var(--font-mono);font-size:11.5px;color:var(--text);}
+  .a-total{font-family:var(--font-mono);font-size:12.5px;font-weight:800;color:var(--text);}
+  .a-live{color:var(--accent);}
+  .a-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:5px;}
+  .a-ot{font-size:9.5px;font-weight:700;color:var(--accent);display:block;margin-top:1px;}
+
+  /* ============ CONCEPT B — Week strip + single day detail (reuses Schedules' own day-strip pattern) ============ */
+  .b-strip{display:flex;gap:6px;margin-bottom:14px;}
+  .b-day{flex:1;background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;}
+  .b-day.active{background:var(--ink);border-color:var(--ink);}
+  .b-day .dow{font-size:8.5px;color:var(--text-faint);}
+  .b-day.active .dow{color:#8A8F9C;}
+  .b-day .num{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);margin:2px 0;}
+  .b-day.active .num{color:#fff;}
+  .b-day .bar-track{height:4px;border-radius:2px;background:var(--canvas);margin-top:4px;overflow:hidden;}
+  .b-day .bar-fill{height:100%;background:var(--status-good-fg);border-radius:2px;}
+  .b-day.active .bar-fill{background:var(--accent);}
+  .b-day.ot .bar-fill{background:var(--accent);}
+  .b-detail{border-top:1px solid #F0F1F3;padding-top:14px;}
+  .b-detail-row{display:flex;align-items:center;justify-content:space-between;}
+  .b-detail-row b{font-size:15px;font-weight:800;}
+  .b-detail-meta{display:flex;gap:16px;margin-top:10px;}
+  .b-stat span{display:block;font-size:9px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;}
+  .b-stat b{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);}
+
+  /* ============ CONCEPT C — Vertical bar chart, one glance at the whole week ============ */
+  .c-chart{display:flex;align-items:flex-end;gap:10px;height:150px;padding:0 4px 6px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .c-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;}
+  .c-bar{width:100%;border-radius:6px 6px 3px 3px;background:var(--status-good-fg);position:relative;}
+  .c-bar.ot{background:var(--accent);}
+  .c-bar.live{background:var(--accent);background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.25) 0 5px, transparent 5px 10px);}
+  .c-bar.empty{background:var(--canvas);}
+  .c-target-line{position:absolute;left:-4px;right:-4px;border-top:1.5px dashed var(--text-faint);}
+  .c-val{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--text);}
+  .c-labels{display:flex;gap:10px;padding:0 4px;}
+  .c-labels div{flex:1;text-align:center;}
+  .c-labels b{display:block;font-size:11px;font-weight:700;color:var(--text);}
+  .c-labels span{font-size:9px;color:var(--text-faint);}
+</style>
+
+<div class="page">
+  <span class="eyebrow">Truland Homes · Supervisor App</span>
+  <h1>Timesheet — three directions</h1>
+  <p class="sub">Rings are out. Three plain, non-gimmicky options — pick one, or tell me what's still missing from all three.</p>
+
+  <div class="grid">
+
+    <!-- ============ A ============ -->
+    <div class="col">
+      <div class="col-label">A — Clean list (closest to your reference)</div>
+      <div class="col-desc">A plain table: Date, then Start/End as exact text, Total bold. No graphics at all — today's still-open row shows in red with a live dot, overtime is a small red note under the total.</div>
+      <div class="frame">
+        <div class="panel">
+          <div class="top-row"><div><h2>Timesheet</h2><p>Week of 17 – 23 Aug · 38.5 hrs</p></div><span class="btn-dark">▶ Clock in</span></div>
+          <table class="a-table">
+            <thead><tr><th>Date</th><th>Start</th><th>End</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td class="a-day"><b>Mon</b><span>17 Aug</span></td><td class="a-time">7:00 AM</td><td class="a-time">4:00 PM</td><td class="a-total">8.0h</td></tr>
+              <tr><td class="a-day"><b>Tue</b><span>18 Aug</span></td><td class="a-time a-live"><span class="a-dot"></span>7:32 AM</td><td class="a-time a-live">now</td><td class="a-total a-live">2.2h</td></tr>
+              <tr><td class="a-day"><b>Wed</b><span>19 Aug</span></td><td class="a-time">8:00 AM</td><td class="a-time">6:30 PM</td><td class="a-total">10.5h<span class="a-ot">+2.5h OT</span></td></tr>
+              <tr><td class="a-day"><b>Thu</b><span>20 Aug</span></td><td class="a-time">7:30 AM</td><td class="a-time">5:00 PM</td><td class="a-total">9.5h<span class="a-ot">+1.5h OT</span></td></tr>
+              <tr><td class="a-day"><b>Fri</b><span>21 Aug</span></td><td class="a-time">9:00 AM</td><td class="a-time">1:00 PM</td><td class="a-total">4.0h</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ B ============ -->
+    <div class="col">
+      <div class="col-label">B — Week strip + day detail</div>
+      <div class="col-desc">Reuses the exact day-strip component already on the Schedules page — tap a day to see its Start/End/Total below. Familiar interaction pattern, nothing new to learn.</div>
+      <div class="frame">
+        <div class="panel">
+          <div class="top-row"><div><h2>Timesheet</h2><p>Week of 17 – 23 Aug · 38.5 hrs</p></div><span class="btn-dark">▶ Clock in</span></div>
+          <div class="b-strip">
+            <div class="b-day"><div class="dow">MON</div><div class="num">17</div><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div></div>
+            <div class="b-day active"><div class="dow">TUE</div><div class="num">18</div><div class="bar-track"><div class="bar-fill" style="width:28%;"></div></div></div>
+            <div class="b-day ot"><div class="dow">WED</div><div class="num">19</div><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div></div>
+            <div class="b-day ot"><div class="dow">THU</div><div class="num">20</div><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div></div>
+            <div class="b-day"><div class="dow">FRI</div><div class="num">21</div><div class="bar-track"><div class="bar-fill" style="width:50%;"></div></div></div>
+          </div>
+          <div class="b-detail">
+            <div class="b-detail-row"><b>Tuesday 18 Aug</b><span style="color:var(--accent);font-size:11px;font-weight:700;">● Clocked in</span></div>
+            <div class="b-detail-meta">
+              <div class="b-stat"><span>Start</span><b>7:32 AM</b></div>
+              <div class="b-stat"><span>End</span><b>—</b></div>
+              <div class="b-stat"><span>Total so far</span><b>2.2h</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ C ============ -->
+    <div class="col">
+      <div class="col-label">C — Bar chart, whole week at a glance</div>
+      <div class="col-desc">A simple vertical bar per day (height = hours), a dashed line marks the 8-hour target so overtime is visually obvious above it. Today's bar is hatched to read as "in progress."</div>
+      <div class="frame">
+        <div class="panel">
+          <div class="top-row"><div><h2>Timesheet</h2><p>Week of 17 – 23 Aug · 38.5 hrs</p></div><span class="btn-dark">▶ Clock in</span></div>
+          <div class="c-chart">
+            <div class="c-bar-col"><span class="c-val">8.0h</span><div class="c-bar" style="height:76%;"><div class="c-target-line" style="top:0;"></div></div></div>
+            <div class="c-bar-col"><span class="c-val">2.2h</span><div class="c-bar live" style="height:21%;"></div></div>
+            <div class="c-bar-col"><span class="c-val">10.5h</span><div class="c-bar ot" style="height:100%;"><div class="c-target-line" style="top:24%;"></div></div></div>
+            <div class="c-bar-col"><span class="c-val">9.5h</span><div class="c-bar ot" style="height:90%;"><div class="c-target-line" style="top:15%;"></div></div></div>
+            <div class="c-bar-col"><span class="c-val">4.0h</span><div class="c-bar" style="height:38%;"><div class="c-target-line" style="top:0;"></div></div></div>
+          </div>
+          <div class="c-labels">
+            <div><b>Mon</b><span>17</span></div>
+            <div><b>Tue</b><span>18</span></div>
+            <div><b>Wed</b><span>19</span></div>
+            <div><b>Thu</b><span>20</span></div>
+            <div><b>Fri</b><span>21</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

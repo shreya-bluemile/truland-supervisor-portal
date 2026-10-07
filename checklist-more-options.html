@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist Display Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#e9ebee; --rail:#16181c; --card:#ffffff; --soft:#f5f6f7; --line:#e3e5e8; --line-strong:#d3d6da;
+    --text:#16181c; --muted:#6b7078; --faint:#a3a8af;
+    --red:#ee1c2e; --red-soft:#fde8ea; --green:#1f8a5b; --green-soft:#e3f4ec;
+    --amber:#c77d0a; --amber-soft:#fdf3e1; --purple:#6d3fd8; --blue:#3b6fd8; --blue-soft:#e8effc; --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Inter,system-ui,sans-serif;background:#f3f4f6;color:var(--text);font-size:13px;}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+  svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+
+  /* ================= Gallery shell ================= */
+  .page{max-width:1500px;margin:0 auto;padding:28px 24px 60px;}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--red);}
+  .page > h1{font-size:24px;font-weight:800;margin:4px 0 8px;}
+  .intro{font-size:13.5px;color:#6b6f78;max-width:95ch;line-height:1.55;margin-bottom:18px;}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;position:sticky;top:0;background:#f3f4f6;padding:10px 0;z-index:20;}
+  .filters button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--muted);}
+  .filters button.active{background:var(--text);border-color:var(--text);color:#fff;}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:22px;}
+  .opt-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;}
+  .opt-head{display:flex;gap:12px;align-items:flex-start;}
+  .opt-no{width:30px;height:30px;border-radius:8px;background:var(--text);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .opt-head h3{font-size:15px;font-weight:800;}
+  .opt-head p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:3px;}
+  .cat{margin-left:auto;flex:none;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:3px 9px;background:var(--soft);color:var(--muted);white-space:nowrap;}
+  .cat.page{background:var(--blue-soft);color:var(--blue);}
+  .cat.open{background:#efe9fc;color:var(--purple);}
+  .cat.format{background:var(--amber-soft);color:var(--amber);}
+  .cat.elsewhere{background:var(--green-soft);color:var(--green);}
+  .shot{position:relative;border-radius:12px;overflow:hidden;background:#111;}
+  .tablet{position:absolute;top:0;left:0;width:1024px;height:720px;transform-origin:top left;background:var(--bg);overflow:hidden;}
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:11.5px;line-height:1.45;list-style:none;}
+  .pc .pro{color:var(--green);}
+  .pc .con{color:#b3261e;}
+  .pc li::before{font-weight:700;margin-right:5px;}
+  .pc .pro::before{content:"+";}
+  .pc .con::before{content:"−";}
+  .enlarge{flex:none;border:1px solid var(--line-strong);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;display:inline-flex;gap:5px;align-items:center;margin-left:8px;}
+  .enlarge:hover{background:var(--soft);}
+  .tap-hint{font-size:11px;color:var(--muted);}
+  .tablet .btn,.tablet .cl-chip,.tablet .hl,.tablet .q-head,.tablet .seg span,.tablet .pill{cursor:pointer;}
+  .cl-overlay{z-index:30;animation:ovIn .18s ease;}
+  .cl-overlay .ov-body{flex:1;overflow-y:auto;padding:16px 20px 24px;}
+  @keyframes ovIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+  .toast{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:var(--text);color:#fff;font-size:12px;font-weight:600;padding:9px 14px;border-radius:8px;z-index:40;pointer-events:none;}
+  .modal{position:fixed;inset:0;background:rgba(10,12,16,.72);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .modal-inner{position:relative;}
+  .modal-close{position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+  .modal .shot{box-shadow:0 30px 60px -20px rgba(0,0,0,.6);}
+
+  /* ================= Tablet UI (matches client-handover-mockup.html) ================= */
+  .app{display:flex;height:100%;}
+  .rail{width:64px;background:var(--rail);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:14px;flex:none;}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-1px;color:#fff;margin-bottom:6px;}
+  .logo span{color:var(--red);}
+  .rail-btn{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#b9bdc4;position:relative;}
+  .rail-btn svg{width:18px;height:18px;}
+  .rail-btn.menu{width:26px;height:26px;background:#2a2d33;border-radius:6px;margin-bottom:6px;}
+  .rail-btn.menu svg{width:14px;height:14px;}
+  .rail-btn.active{background:var(--red);color:#fff;}
+  .rail-badge{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;border-radius:8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--rail);}
+  .main{flex:1;min-width:0;padding:14px 18px 20px;overflow:hidden;position:relative;}
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .back{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;}
+  .search{margin-left:auto;display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;width:150px;color:var(--faint);font-size:11px;}
+  .search svg{margin-left:auto;}
+  .bell{width:30px;height:30px;border-radius:8px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--amber);position:relative;}
+  .bell .rail-badge{border-color:#fff;}
+  .grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:start;}
+  .col{display:flex;flex-direction:column;gap:14px;min-width:0;}
+  .card{background:var(--card);border-radius:var(--radius);padding:16px;}
+  .card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .card-head h3{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .card-head .btn{margin-left:auto;}
+  .count{font-size:10px;font-weight:600;color:var(--muted);background:var(--soft);border-radius:4px;padding:1px 6px;}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:7px;padding:6px 10px;font-size:11px;font-weight:600;background:#fff;white-space:nowrap;}
+  .btn.primary{background:var(--red);border-color:var(--red);color:#fff;}
+  .btn.dark{background:var(--text);border-color:var(--text);color:#fff;}
+  .btn.ghost{border-color:transparent;background:transparent;}
+  .btn.lg{padding:9px 14px;font-size:12px;}
+  .title{font-size:17px;font-weight:700;margin-bottom:8px;}
+  .meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);margin-bottom:16px;}
+  .code{border:1px solid var(--line-strong);border-radius:4px;padding:1px 6px;color:var(--text);font-weight:500;}
+  .meta .sep{width:1px;height:12px;background:var(--line-strong);}
+  .meta .loc{display:inline-flex;align-items:center;gap:4px;}
+  .meta .loc svg{color:var(--red);width:12px;height:12px;}
+  .strip{display:grid;grid-template-columns:repeat(3,1fr);background:var(--soft);border:1px solid var(--line);border-radius:8px;}
+  .strip > div{padding:10px 14px;position:relative;}
+  .strip > div + div{border-left:1px solid var(--line);}
+  .lbl{display:flex;align-items:center;gap:5px;font-size:9.5px;font-weight:500;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+  .lbl svg{width:11px;height:11px;}
+  .val{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12px;}
+  .edit{color:var(--faint);display:inline-flex;}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border-radius:4px;padding:2px 8px;white-space:nowrap;}
+  .pill.completed,.pill.green{background:var(--green-soft);color:var(--green);}
+  .pill.flag,.pill.red{background:var(--red-soft);color:var(--red);}
+  .pill.amber{background:var(--amber-soft);color:var(--amber);}
+  .pill.grey{background:var(--soft);color:var(--muted);}
+  .pill.sm{font-size:9.5px;padding:1px 6px;}
+  .docs{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .doc{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0;}
+  .doc-ic{width:30px;height:30px;border-radius:6px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--muted);flex:none;}
+  .doc-name{font-weight:600;font-size:12px;}
+  .sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
+  .doc-actions{margin-left:auto;display:flex;gap:8px;color:var(--muted);}
+  .list{display:flex;flex-direction:column;gap:8px;}
+  .row{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:8px;padding:10px;}
+  .row > .btn{margin-left:auto;}
+  .row-title{font-weight:600;font-size:12px;}
+  .haz-ic,.flag-ic{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .haz-ic{background:var(--amber-soft);color:var(--amber);}
+  .flag-ic{background:var(--red-soft);color:var(--red);}
+  .date-box{text-align:center;padding-right:12px;border-right:1px solid var(--line);min-width:42px;}
+  .date-box b{display:block;font-size:15px;}
+  .date-box span{font-size:9px;letter-spacing:.06em;color:var(--muted);}
+  .visit-meta{font-size:10.5px;color:var(--muted);margin-top:3px;}
+  .contractor .lbl{margin-bottom:10px;}
+  .who{display:flex;align-items:center;gap:10px;}
+  .who .edit{margin-left:auto;}
+  .who-name{font-weight:600;font-size:14px;}
+  .avatar{border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;flex:none;}
+  .avatar.lg{width:38px;height:38px;font-size:13px;}
+  .avatar.md{width:28px;height:28px;font-size:10.5px;}
+  .avatar.sm{width:22px;height:22px;font-size:9px;}
+  .avatar.pr{background:#d8457a;}
+  .avatar.sk{background:#1f8a9b;}
+  .contact-list{margin-top:12px;border-top:1px solid var(--line);}
+  .contact{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .contact:last-child{border-bottom:none;padding-bottom:0;}
+  .contact-ic{width:26px;height:26px;border-radius:6px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--muted);}
+  .contact span{font-weight:500;font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .copy{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px;flex:none;}
+  .notes{display:flex;flex-direction:column;min-height:470px;}
+  .tabs{display:grid;grid-auto-columns:1fr;grid-auto-flow:column;background:#eceef0;border-radius:8px;padding:3px;margin-bottom:14px;}
+  .tab{padding:6px;border-radius:6px;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;}
+  .tab.active{background:#fff;color:var(--text);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;flex:none;}
+  .dot.green{background:var(--green);}
+  .note{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:12px;margin-bottom:10px;}
+  .note-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .note-head b{font-size:12px;font-weight:600;}
+  .note-head time{margin-left:auto;font-size:10.5px;color:var(--muted);}
+  .note p{font-size:11.5px;color:#3c4047;line-height:1.5;}
+  .attach{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:11px;font-weight:600;margin-top:10px;}
+  .composer{margin-top:auto;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:10px;}
+  .composer .ta{height:44px;border:1px solid var(--line);border-radius:6px;padding:8px;font-size:11.5px;color:var(--faint);background:#fff;}
+  .composer-foot{display:flex;justify-content:space-between;margin-top:8px;}
+
+  /* Checklist pieces */
+  .seg{display:inline-grid;grid-auto-flow:column;border:1px solid var(--line);border-radius:8px;padding:3px;background:#fff;}
+  .seg > span{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;}
+  .seg > span.active{background:var(--soft);color:var(--text);}
+  .cl-list{display:flex;flex-direction:column;gap:8px;}
+  .q{background:#fff;border:1px solid var(--line);border-radius:8px;}
+  .q.flagged{border-left:3px solid var(--red);}
+  .q-head{display:flex;align-items:center;gap:10px;padding:10px 12px;min-height:44px;}
+  .q-num{width:22px;height:22px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;}
+  .q.flagged .q-num,.q-num.red{background:var(--red-soft);color:var(--red);}
+  .q-text{font-weight:600;font-size:12px;}
+  .q-tail{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;color:var(--faint);}
+  .q-body{border-top:1px solid var(--line);}
+  .resp{padding:10px 12px;display:flex;gap:10px;}
+  .resp + .resp{border-top:1px dashed var(--line);}
+  .resp-main{flex:1;min-width:0;}
+  .resp-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .resp-head b{font-size:12px;font-weight:600;}
+  .resp-head time{font-size:10.5px;color:var(--muted);}
+  .ans{font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 7px;}
+  .ans.yes{background:var(--green-soft);color:var(--green);}
+  .ans.no{background:var(--red-soft);color:var(--red);}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .tag{font-size:10px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:2px 7px;}
+  .tag.warn{color:var(--amber);background:var(--amber-soft);border-color:#f5e1bd;}
+  .resp-note{margin-top:8px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:11.5px;line-height:1.5;color:#3c4047;}
+  .files{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+  .file{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff;}
+  .file .pdf{color:var(--red);}
+  .file-name{font-size:11.5px;font-weight:600;}
+  .file-actions{margin-left:auto;display:flex;gap:10px;color:var(--muted);}
+  .photos{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .photo{border-radius:6px;overflow:hidden;border:1px solid var(--line);flex:none;}
+  .photo svg{width:100%;height:100%;display:block;}
+
+  /* Overlays */
+  .dim{position:absolute;inset:0;background:rgba(22,24,28,.38);}
+  .pop{position:absolute;background:#fff;border-radius:12px;box-shadow:0 18px 40px -12px rgba(15,17,25,.35),0 0 0 1px rgba(0,0,0,.04);}
+  .pop-caret{position:absolute;width:14px;height:14px;background:#fff;transform:rotate(45deg);top:-7px;}
+  .sheet{position:absolute;left:64px;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14);display:flex;flex-direction:column;}
+  .handle{width:44px;height:5px;border-radius:3px;background:var(--line-strong);margin:8px auto 4px;flex:none;}
+  .screen{position:absolute;inset:0 0 0 64px;background:var(--bg);display:flex;flex-direction:column;}
+  .screen-head{background:#fff;padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+  .screen-head h2{font-size:17px;font-weight:700;}
+  .screen-head .right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+  .x{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);flex:none;}
+  .eyebrow-sm{font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  .hl{outline:2px dashed #f0b400;outline-offset:3px;border-radius:8px;}
+
+  /* Booking/list rows used on non-handover screens */
+  .bk-row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .bk-time{font-size:12px;font-weight:700;min-width:62px;}
+  .bk-code{font-size:10.5px;color:var(--muted);font-weight:600;}
+  .bk-title{font-size:12.5px;font-weight:600;}
+  .bk-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+  .fp{display:inline-flex;gap:2px;}
+  .fp i{width:7px;height:12px;border-radius:2px;background:var(--green);display:block;}
+  .fp i.r{background:var(--red);}
+  .fp i.g{background:var(--line-strong);}
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="eyebrow">Truland Homes · Supervisor tablet</span>
+  <h1>Filled checklist — more design options</h1>
+  <p class="intro">Every option below is drawn on the real tablet screen (1024 × 720), with the same booking: Client handover, Lot 42, 10 questions, 17 responses, 2 flagged. These are new — the first 9 are in <a href="checklist-placement-concepts.html">checklist-placement-concepts.html</a>. The dashed yellow outline marks what the option adds. <b>Tap inside a design</b> — buttons like Open checklist, Review, View or a flagged chip open the checklist in that tablet; use <b>Enlarge</b> to see a design full size.</p>
+  <div class="filters" id="filters">
+    <button class="active" data-cat="all">All</button>
+    <button data-cat="page">On the handover page</button>
+    <button data-cat="open">Opening &amp; reading</button>
+    <button data-cat="format">Formats</button>
+    <button data-cat="elsewhere">Elsewhere in the app</button>
+  </div>
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<script>
+/* =====================================================================
+   Shared data + helpers. Each option is a plain object pushed to OPTIONS:
+   { no, cat: 'page'|'open'|'format'|'elsewhere', name, desc, pros:[], cons:[],
+     css?: string, render: () => html }   — render returns the 1024×720 tablet content.
+   ===================================================================== */
+const OPTIONS = [];
+const CAT_LABEL = { page: 'On the page', open: 'Opening & reading', format: 'Format', elsewhere: 'Elsewhere' };
+
+const PEOPLE = { MT: 'Mike T.', PR: 'Priya R.', SK: 'Sarah K.' };
+const CHECKLIST = [
+  { q: 'Was left clean and all rubbish removed?', flag: 'No', responses: [
+    { by: 'MT', ans: 'Yes', time: '12-08-2026, 02:05 PM' } ] },
+  { q: 'Was the client present at handover?', flag: 'No', responses: [
+    { by: 'MT', ans: 'Yes', time: '12-08-2026, 02:20 PM', tags: ['Note added', 'Schedule date updated'], note: 'Skip bin not collected, contractor booked for Tue.' },
+    { by: 'PR', ans: 'No', time: '11-08-2026, 02:22 PM', tags: ['Staff notified'] },
+    { by: 'SK', ans: 'Yes', time: '10-08-2026, 02:20 PM', tags: ['Status updated'] } ] },
+  { q: 'Finish matches the agreed specification?', flag: 'No', responses: [
+    { by: 'MT', ans: 'Yes', time: '12-08-2026, 02:24 PM' },
+    { by: 'SK', ans: 'Yes', time: '10-08-2026, 02:26 PM' } ] },
+  { q: 'Was access to the site delayed?', flag: 'Yes', responses: [
+    { by: 'MT', ans: 'No', time: '12-08-2026, 02:25 PM' },
+    { by: 'PR', ans: 'No', time: '11-08-2026, 02:28 PM' } ] },
+  { q: 'Were any defects found in the contractor work?', flag: 'Yes', responses: [
+    { by: 'MT', ans: 'Yes', time: '11-08-2026, 02:20 PM', tags: ['Document uploaded', 'Contractor notified'], files: [['Permit.pdf', '1.2 MB'], ['Insurance.pdf', '1.3 MB']] },
+    { by: 'PR', ans: 'No', time: '11-08-2026, 02:28 PM', tags: ['Staff notified'] },
+    { by: 'SK', ans: 'Yes', time: '10-08-2026, 02:20 PM', tags: ['Photos uploaded', 'Status updated'], photos: 3 } ] },
+  { q: 'Was there a safety incident?', flag: 'Yes', responses: [
+    { by: 'MT', ans: 'No', time: '12-08-2026, 02:30 PM' } ] },
+  { q: 'Was a permit needed for this job?', flag: null, responses: [
+    { by: 'MT', ans: 'Yes', time: '12-08-2026, 02:31 PM', files: [['Permit.pdf', '1.2 MB']] },
+    { by: 'SK', ans: 'Yes', time: '10-08-2026, 02:31 PM' } ] },
+  { q: 'Safety barriers and signage in position?', flag: 'No', responses: [
+    { by: 'MT', ans: 'Yes', time: '12-08-2026, 02:33 PM' } ] },
+  { q: 'Is the area safe to hand back?', flag: 'No', responses: [
+    { by: 'MT', ans: 'Yes', time: '12-08-2026, 02:35 PM' } ] },
+  { q: 'Was any damage found on site?', flag: 'Yes', responses: [
+    { by: 'MT', ans: 'No', time: '12-08-2026, 02:38 PM' } ] },
+];
+CHECKLIST.forEach((c, i) => { c.i = i; c.flagged = c.responses.some(r => r.ans === c.flag); });
+const FLAGGED = CHECKLIST.filter(c => c.flagged);        // Q2, Q5
+
+const IC = {
+  back: '<svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>',
+  search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  bell: '<svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>',
+  pin: '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  doc: '<svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+  pdf: '<svg class="pdf" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+  img: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
+  dl: '<svg viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg>',
+  upload: '<svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  warn: '<svg viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3zM12 10v4M12 17h.01"/></svg>',
+  cal: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',
+  calCheck: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"/></svg>',
+  circle: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>',
+  pencil: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>',
+  user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+  mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  phone: '<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
+  down: '<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>',
+  up: '<svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>',
+  right: '<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
+  left: '<svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>',
+  flag: '<svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
+  check: '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
+  clip: '<svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M9 13l2 2 4-4"/></svg>',
+  eye: '<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  share: '<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
+  print: '<svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>',
+  clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+  camera: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  history: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg>',
+  chat: '<svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>',
+  grid: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
+  menu: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  gear: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
+  home: '<svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5 10v10h14V10"/></svg>',
+};
+
+const PHOTO_TONES = [['#c9b48a', '#7d8f5a'], ['#a8b8c8', '#8a7a5c'], ['#b9a07a', '#5f7048'], ['#b7c3b0', '#6f7f93']];
+
+const H = {
+  // Stand-in site photo (no real uploads in the mockup)
+  photo(i = 0, w = 64, h = w){
+    const [a, b] = PHOTO_TONES[i % PHOTO_TONES.length];
+    return `<div class="photo" style="width:${w}px;height:${h}px"><svg viewBox="0 0 72 72" preserveAspectRatio="xMidYMid slice" style="stroke:none"><rect width="72" height="72" fill="${a}"/><path d="M0 50 20 34l14 10 16-16 22 20v24H0z" fill="${b}"/><circle cx="52" cy="18" r="6" fill="#fff" opacity=".7"/></svg></div>`;
+  },
+  av(by, size = 'sm'){ return `<div class="avatar ${size} ${by.toLowerCase()}">${by}</div>`; },
+  pill(text, kind = 'grey', extra = ''){ return `<span class="pill ${kind} ${extra}">${text}</span>`; },
+  seg(items, active = 0){ return `<div class="seg">${items.map(([t, n], i) => `<span class="${i === active ? 'active' : ''}">${t}${n != null ? ` <span class="count">${n}</span>` : ''}</span>`).join('')}</div>`; },
+  fingerprint(){ return `<span class="fp">${CHECKLIST.map(c => `<i class="${c.flagged ? 'r' : ''}"></i>`).join('')}</span>`; },
+
+  rail(active = 'dash', { checklists = false, badge = '' } = {}){
+    const b = (key, icon, label) => `<span class="rail-btn ${active === key ? 'active' : ''}" aria-label="${label}">${icon}${key === 'check' && badge ? `<span class="rail-badge">${badge}</span>` : ''}</span>`;
+    return `<nav class="rail"><div class="logo">T<span>H</span></div><span class="rail-btn menu">${IC.menu}</span>
+      ${b('dash', IC.grid, 'Dashboard')}${b('sched', IC.cal, 'Schedule')}${checklists ? b('check', IC.clip, 'Checklists') : b('tasks', IC.clip, 'Tasks')}${b('settings', IC.gear, 'Settings')}</nav>`;
+  },
+  topbar({ title = 'Client Handover', back = true, bellBadge = 0 } = {}){
+    return `<div class="topbar"><span class="back">${back ? IC.back : ''}${title}</span>
+      <span class="search">Search${IC.search}</span>
+      <span class="bell">${IC.bell}${bellBadge ? `<span class="rail-badge">${bellBadge}</span>` : ''}</span></div>`;
+  },
+  header({ pill = '<span class="pill completed">Completed</span>', statusExtra = '', metaExtra = '', after = '', cls = '' } = {}){
+    return `<section class="card ${cls}">
+      <h1 class="title">Client handover</h1>
+      <div class="meta"><span class="code">0142</span><span class="sep"></span><span class="loc">${IC.pin}Lot 42 Northmead · VIC</span>${metaExtra}</div>
+      <div class="strip">
+        <div><div class="lbl">${IC.circle}Status</div><div class="val">${pill}<span class="edit">${IC.pencil}</span></div>${statusExtra}</div>
+        <div><div class="lbl">${IC.cal}Scheduled date</div><div class="val">12-08-2026<span class="edit">${IC.pencil}</span></div></div>
+        <div><div class="lbl">${IC.calCheck}Completion date</div><div class="val">12-08-2026<span class="edit">${IC.pencil}</span></div></div>
+      </div>${after}</section>`;
+  },
+  docs({ first = '', count = 2 } = {}){
+    return `<section class="card"><div class="card-head"><h3>${IC.doc}Documents <span class="count">${count}</span></h3><span class="btn">${IC.upload}Upload</span></div>
+      <div class="docs">${first}
+        <div class="doc"><div class="doc-ic">${IC.doc}</div><div><div class="doc-name">handover-signoff.pdf</div><div class="sub">2.5 KB</div></div><div class="doc-actions">${IC.dl}${IC.x}</div></div>
+        <div class="doc"><div class="doc-ic">${IC.img}</div><div><div class="doc-name">handover-photo-2.jpg</div><div class="sub">2.5 KB</div></div><div class="doc-actions">${IC.dl}${IC.x}</div></div>
+      </div></section>`;
+  },
+  hazards({ before = '', count = 1 } = {}){
+    return `<section class="card"><div class="card-head"><h3><span style="color:var(--amber);display:inline-flex">${IC.warn}</span>Hazards <span class="count">${count}</span></h3><span class="btn">${IC.plus}Add Hazard</span></div>
+      <div class="list">${before}<div class="row"><div class="haz-ic">${IC.warn}</div><div><div class="row-title">Live electrical at meter box</div><div class="sub">Isolate before walkthrough</div></div><span class="btn">View</span></div></div></section>`;
+  },
+  visits(){
+    return `<section class="card"><div class="card-head"><h3><span style="color:var(--red);display:inline-flex">${IC.pin}</span>Site visits <span class="count">1</span></h3><span class="btn">${IC.plus}Log visit</span></div>
+      <div class="list"><div class="row"><div class="date-box"><b>12</b><span>JUN</span></div><div><div class="row-title">Pre-handover walkthrough</div><div class="visit-meta">12-06-2026 · 10:00 AM · Lot 42</div></div><span class="btn">View</span></div></div></section>`;
+  },
+  contractor(){
+    return `<section class="card contractor"><div class="lbl">${IC.user}Assigned contractor</div>
+      <div class="who"><div class="avatar lg">AM</div><div><div class="who-name">Amelia Marsh</div><div class="sub">Truland Homes</div></div><span class="edit">${IC.pencil}</span></div>
+      <div class="contact-list">
+        <div class="contact"><div class="contact-ic">${IC.mail}</div><span>amelia.marsh@trulandhomes.com.au</span><span class="copy">Copy</span></div>
+        <div class="contact"><div class="contact-ic">${IC.phone}</div><span>0412 345 678</span><span class="copy">Copy</span></div>
+      </div></section>`;
+  },
+  notes(){
+    return `<div class="note"><div class="note-head">${H.av('AM')}<b>Amelia Marsh</b><time>17-08-2026, 02:10 PM</time></div><p>Need the signed PDF on the day — don't close the booking without it.</p><span class="attach">${IC.pdf}sign-off-checklist.pdf</span></div>
+      <div class="note"><div class="note-head">${H.av('AM')}<b>Amelia Marsh</b><time>17-08-2026, 02:10 PM</time></div><p>Client on site 10am. Walk the meter box last — isolation to be confirmed before photos.</p><span class="attach">${IC.img}meter-box.jpg</span></div>
+      <div class="composer"><div class="ta">Add a note for the crew...</div><div class="composer-foot"><span class="btn">Attach file</span><span class="btn primary">Add →</span></div></div>`;
+  },
+  panel({ tabs = [['Notes', 5], ['Activity', 2]], active = 0, body = null } = {}){
+    return `<section class="card notes"><div class="tabs">${tabs.map(([t, n, extra], i) => `<span class="tab ${i === active ? 'active' : ''}">${t}${n != null ? ` <span class="count">${n}</span>` : ''}${extra || ''}</span>`).join('')}</div>${body ?? H.notes()}</section>`;
+  },
+  // The standard Client Handover screen. Pass slots to change parts of it.
+  page({ top = '', left = null, right = null, overlay = '', rail = 'dash', railOpts = {}, bellBadge = 0 } = {}){
+    left = left || [H.header(), H.docs(), H.hazards(), H.visits()];
+    right = right || [H.contractor(), H.panel()];
+    return `<div class="app">${H.rail(rail, railOpts)}<main class="main">${H.topbar({ bellBadge })}${top}
+      <div class="grid"><div class="col">${left.join('')}</div><div class="col">${right.join('')}</div></div></main></div>${overlay}`;
+  },
+  // Any other screen (Schedules, Dashboard...) with the same rail + topbar.
+  shell({ rail = 'dash', railOpts = {}, title = 'Dashboard', back = false, bellBadge = 0, body = '', overlay = '' } = {}){
+    return `<div class="app">${H.rail(rail, railOpts)}<main class="main">${H.topbar({ title, back, bellBadge })}${body}</main></div>${overlay}`;
+  },
+
+  resp(c, r){
+    return `<div class="resp">${H.av(r.by)}<div class="resp-main">
+      <div class="resp-head"><b>${PEOPLE[r.by]}</b><span class="ans ${r.ans.toLowerCase()}">${r.ans}</span><time>${r.time}</time></div>
+      ${r.tags ? `<div class="tags">${r.tags.map(t => `<span class="tag${r.ans === c.flag ? ' warn' : ''}">${t}</span>`).join('')}</div>` : ''}
+      ${r.note ? `<div class="resp-note"><b>Note:</b> ${r.note}</div>` : ''}
+      ${r.files ? `<div class="files">${r.files.map(([n, s]) => `<div class="file">${IC.pdf}<div><div class="file-name">${n}</div><div class="sub" style="margin-top:0">${s}</div></div><div class="file-actions">${IC.eye}${IC.dl}</div></div>`).join('')}</div>` : ''}
+      ${r.photos ? `<div class="photos">${Array.from({ length: r.photos }, (_, i) => H.photo(i)).join('')}</div>` : ''}
+    </div></div>`;
+  },
+  q(c, { open = false } = {}){
+    return `<div class="q${c.flagged ? ' flagged' : ''}"><div class="q-head"><span class="q-num">${c.i + 1}</span><span class="q-text">${c.q}</span>
+      <span class="q-tail">${c.flagged ? H.pill('Flagged', 'flag') : ''}<span class="count">${c.responses.length}</span>${open ? IC.up : IC.down}</span></div>
+      ${open ? `<div class="q-body">${c.responses.map(r => H.resp(c, r)).join('')}</div>` : ''}</div>`;
+  },
+  list({ only = 'all', open = FLAGGED.map(c => c.i) } = {}){
+    return `<div class="cl-list">${CHECKLIST.filter(c => only === 'all' || c.flagged).map(c => H.q(c, { open: open.includes(c.i) })).join('')}</div>`;
+  },
+  bookingRow({ time = '8:30 AM', code = '#0142', title = 'Client handover', lot = 'Lot 42 Northmead Dr', status = H.pill('Completed', 'green'), extra = '', cls = '' } = {}){
+    return `<div class="bk-row ${cls}"><div class="bk-time">${time}</div><div><div class="bk-code">${code}</div><div class="bk-title">${title}</div><div class="sub">${lot}</div></div>
+      <div class="bk-right">${extra}${status}<span style="color:var(--faint);display:inline-flex">${IC.right}</span></div></div>`;
+  },
+};
+</script>
+
+<script>
+/* ======================= Options 1–7 ======================= */
+OPTIONS.push(
+{
+  no: 1, cat: 'page', name: 'Sticky flagged banner',
+  desc: 'A red strip under the top bar says what went wrong in plain words. "Review" opens the checklist; "Mark reviewed" shrinks it to a slim green line.',
+  pros: ['Impossible to miss', 'Says the problem, not just a count', 'Goes away once dealt with'],
+  cons: ['Takes a row of space until reviewed', 'Nothing shown when all clear'],
+  css: `.banner{display:flex;align-items:center;gap:12px;background:var(--red-soft);border:1px solid #f6c3c8;border-radius:10px;padding:10px 14px;margin-bottom:14px;}
+    .banner .flag-ic{background:#fff;}
+    .banner b{font-size:12.5px;color:#a3121f;}
+    .banner p{font-size:11.5px;color:#7a2a31;margin-top:2px;}
+    .banner .acts{margin-left:auto;display:flex;gap:8px;}`,
+  render: () => H.page({
+    top: `<div class="banner hl"><div class="flag-ic">${IC.flag}</div><div><b>Handover checklist: 2 items flagged</b><p>Q2 Priya R. says the client wasn't present · Q5 defects found in contractor work (2 PDFs, 3 photos)</p></div>
+      <div class="acts"><span class="btn">Mark reviewed</span><span class="btn dark">Review ${IC.right}</span></div></div>`,
+  }),
+},
+{
+  no: 2, cat: 'page', name: 'Quick-look popover on the status pill',
+  desc: 'The Completed pill carries a red "2". Tapping it drops a small card with the result and the two flagged questions, without leaving the page.',
+  pros: ['No new UI on the page at all', 'Answers "why is it done?" where you look for it'],
+  cons: ['Hidden until you tap the pill', 'Popover too small for photos'],
+  css: `.pill-badge{background:var(--red);color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:0 5px;margin-left:2px;}
+    .qk{top:196px;left:96px;width:390px;padding:14px;}
+    .qk-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+    .qk-top b{font-size:13px;}
+    .qk-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+    .qk-stats div{background:var(--soft);border-radius:8px;padding:8px;text-align:center;font-size:10px;color:var(--muted);}
+    .qk-stats b{display:block;font-size:15px;color:var(--text);}
+    .qk .row{padding:8px;margin-bottom:6px;}`,
+  render: () => H.page({
+    left: [H.header({ pill: `<span class="pill completed hl">Completed <span class="pill-badge">2</span></span>` }), H.docs(), H.hazards(), H.visits()],
+    overlay: `<div class="pop qk"><span class="pop-caret" style="left:34px"></span>
+      <div class="qk-top">${IC.clip}<b>Handover checklist</b>${H.pill('Submitted 12-08', 'grey', 'sm')}<span class="x" style="margin-left:auto;width:26px;height:26px">${IC.x}</span></div>
+      <div class="qk-stats"><div><b>10/10</b>answered</div><div><b style="color:var(--red)">2</b>flagged</div><div><b>3</b>people</div></div>
+      ${FLAGGED.map(c => `<div class="row"><div class="flag-ic" style="width:24px;height:24px">${IC.flag}</div><div><div class="row-title" style="font-size:11.5px">Q${c.i + 1}. ${c.q}</div><div class="sub">${c.responses.filter(r => r.ans === c.flag).map(r => PEOPLE[r.by]).join(', ')} said "${c.flag}"</div></div></div>`).join('')}
+      <span class="btn dark" style="width:100%;justify-content:center;margin-top:4px">Open full checklist ${IC.right}</span></div>`,
+  }),
+},
+{
+  no: 3, cat: 'page', name: 'Page tabs: Details · Checklist · Activity',
+  desc: 'The web panel\'s three tabs move onto the handover page itself. Details is today\'s layout; Checklist shows the answers at full page width.',
+  pros: ['Same mental model as the web portal', 'Full width for photos and PDFs', 'No overlay or navigation'],
+  cons: ['Adds a tab row to every booking', 'Details content is one tap further away'],
+  css: `.ptabs{display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px;margin-bottom:14px;}
+    .ptabs span{flex:none;padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;color:var(--muted);display:flex;gap:6px;align-items:center;}
+    .ptabs span.active{background:var(--text);color:#fff;}
+    .ptabs .btn{margin-left:auto;}
+    .cl-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;}`,
+  render: () => `<div class="app">${H.rail()}<main class="main">${H.topbar()}
+    <div class="ptabs hl"><span>Details</span><span class="active">Checklist <span class="dot"></span></span><span>Activity <span class="count">2</span></span><span class="btn">Manage ${IC.down}</span></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div style="font-size:15px;font-weight:700">Client handover · checklist</div>${H.pill('2 flagged', 'flag')}<span class="sub" style="margin:0">Submitted by Mike T. · 12-08-2026, 02:40 PM</span><div style="margin-left:auto">${H.seg([['All', 10], ['Flagged', 2]])}</div></div>
+    <div class="cl-2col"><div class="cl-list">${H.q(CHECKLIST[1], { open: true })}${H.q(CHECKLIST[0])}${H.q(CHECKLIST[2])}</div><div class="cl-list">${H.q(CHECKLIST[4], { open: true })}${H.q(CHECKLIST[3])}</div></div>
+    </main></div>`,
+},
+{
+  no: 4, cat: 'open', name: 'Pull-up bottom sheet',
+  desc: 'A peek bar is docked to the bottom of the handover page. Drag it up to half height for the flagged questions, all the way for everything; swipe down to put it away.',
+  pros: ['Page stays visible above', 'Thumb-friendly on a tablet', 'Always one swipe away'],
+  cons: ['Peek bar covers the bottom of the page', 'Gestures aren\'t obvious to new users'],
+  css: `.peek{display:flex;align-items:center;gap:10px;padding:4px 18px 12px;}
+    .peek b{font-size:13px;}
+    .sheet-body{padding:0 18px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow:hidden;}`,
+  render: () => H.page({
+    overlay: `<div class="dim" style="left:64px;opacity:.5"></div><div class="sheet hl" style="height:395px">
+      <div class="handle"></div>
+      <div class="peek">${IC.clip}<b>Handover checklist</b>${H.pill('10/10 answered', 'green')}${H.pill('2 flagged', 'flag')}<span class="sub" style="margin:0">Mike T. · 12-08-2026</span>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">${H.seg([['Flagged', 2], ['All', 10]])}<span class="x">${IC.down}</span></div></div>
+      <div class="sheet-body">${H.q(CHECKLIST[1], { open: true })}${H.q(CHECKLIST[4], { open: true })}</div></div>`,
+  }),
+},
+{
+  no: 5, cat: 'open', name: 'Split view: questions + answers',
+  desc: 'Like iPad Settings. The left pane lists all 10 questions with a result; tapping one fills the right pane with every response at full width. "Next flagged" steps through problems.',
+  pros: ['No accordions — one tap per question', 'Big photos and PDFs', 'Fast to step through flagged items'],
+  cons: ['Needs landscape; collapses to a list in portrait', 'Only one question visible at a time'],
+  css: `.split{flex:1;display:grid;grid-template-columns:330px 1fr;min-height:0;}
+    .sp-list{background:#fff;border-right:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:4px;overflow:hidden;}
+    .sp-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:11.5px;font-weight:600;}
+    .sp-item.sel{background:var(--text);color:#fff;}
+    .sp-item.sel .q-num{background:#fff;}
+    .sp-item .fr{margin-left:auto;display:flex;gap:3px;}
+    .sp-item .fr i{width:6px;height:6px;border-radius:50%;background:var(--green);}
+    .sp-item .fr i.n{background:var(--red);}
+    .sp-detail{padding:18px 22px;overflow:hidden;}
+    .sp-detail h3{font-size:16px;font-weight:700;margin:6px 0 4px;}
+    .sp-detail .resp{background:#fff;border:1px solid var(--line);border-radius:10px;margin-top:10px;}
+    .sp-detail .photos .photo{width:120px !important;height:90px !important;}`,
+  render: () => H.shell({
+    body: '', overlay: `<div class="screen"><div class="screen-head"><span class="btn">${IC.back}Client handover</span><h2>Handover checklist</h2>${H.pill('Completed', 'completed')}${H.pill('2 flagged', 'flag')}<div class="right">${H.seg([['All', 10], ['Flagged', 2]])}</div></div>
+      <div class="split hl"><div class="sp-list">${CHECKLIST.map(c => `<div class="sp-item ${c.i === 4 ? 'sel' : ''}"><span class="q-num ${c.flagged ? 'red' : ''}">${c.i + 1}</span><span>${c.q}</span><span class="fr">${c.responses.map(r => `<i class="${r.ans === c.flag ? 'n' : ''}"></i>`).join('')}</span></div>`).join('')}</div>
+      <div class="sp-detail"><div style="display:flex;align-items:center;gap:8px"><span class="eyebrow-sm">Question 5 of 10</span>${H.pill('Flagged', 'flag', 'sm')}<div style="margin-left:auto;display:flex;gap:8px"><span class="btn">${IC.left}Prev flagged</span><span class="btn dark">Next flagged ${IC.right}</span></div></div>
+        <h3>${CHECKLIST[4].q}</h3><div class="sub">3 responses · 2 answered "Yes"</div>
+        ${CHECKLIST[4].responses.map(r => H.resp(CHECKLIST[4], r)).join('')}</div></div></div>`,
+  }),
+},
+{
+  no: 6, cat: 'open', name: 'One question at a time',
+  desc: 'Each question is its own big card, like the steps used to fill it in. Swipe or tap the arrows; the dot row shows where the problems are and "Flagged only" cuts it to two swipes.',
+  pros: ['Mirrors the filling flow', 'Large and readable at arm\'s length', 'Flagged-only review in 2 swipes'],
+  cons: ['Slow to scan all 10', 'Hard to compare questions'],
+  css: `.deck{flex:1;display:flex;flex-direction:column;align-items:center;padding:18px 20px;gap:14px;}
+    .dots{display:flex;gap:8px;align-items:center;}
+    .dots i{width:26px;height:6px;border-radius:3px;background:var(--green);opacity:.5;}
+    .dots i.r{background:var(--red);opacity:.6;}
+    .dots i.cur{opacity:1;height:8px;}
+    .deck-row{display:flex;align-items:center;gap:16px;width:100%;}
+    .nav{width:52px;height:52px;border-radius:50%;background:#fff;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;flex:none;}
+    .nav svg{width:20px;height:20px;}
+    .big-card{flex:1;background:#fff;border-radius:16px;padding:22px 24px;border-top:4px solid var(--red);}
+    .big-card h3{font-size:20px;font-weight:700;margin:8px 0 14px;}
+    .big-card .resp{padding:10px 0;}`,
+  render: () => H.shell({
+    overlay: `<div class="screen"><div class="screen-head"><span class="btn">${IC.back}Client handover</span><h2>Handover checklist</h2>${H.pill('2 flagged', 'flag')}<div class="right"><span class="btn">List view</span>${H.seg([['All', 10], ['Flagged only', 2]], 1)}</div></div>
+      <div class="deck hl"><div class="dots">${CHECKLIST.map(c => `<i class="${c.flagged ? 'r' : ''} ${c.i === 4 ? 'cur' : ''}"></i>`).join('')}<span class="sub" style="margin:0 0 0 8px">Flagged 2 of 2</span></div>
+        <div class="deck-row"><span class="nav">${IC.left}</span>
+          <div class="big-card"><div style="display:flex;gap:8px;align-items:center"><span class="eyebrow-sm">Question 5 of 10</span>${H.pill('Flagged', 'flag', 'sm')}<span class="sub" style="margin:0 0 0 auto">2 of 3 answered "Yes"</span></div>
+            <h3>${CHECKLIST[4].q}</h3>${CHECKLIST[4].responses.map(r => H.resp(CHECKLIST[4], r)).join('')}</div>
+          <span class="nav">${IC.right}</span></div></div></div>`,
+  }),
+},
+{
+  no: 7, cat: 'elsewhere', name: 'Checklist chip on schedule rows',
+  desc: 'Every completed booking in Schedules shows its result — green "All clear" or red "2 flagged" — plus a "Flagged checklists" filter. Tapping the chip opens the checklist straight away.',
+  pros: ['Spot problem handovers across the week', 'Skips the handover page when you just need the answers', 'Filter turns it into a triage list'],
+  cons: ['Busier rows', 'Only useful after completion'],
+  css: `.day-tabs{display:flex;gap:6px;margin-bottom:12px;}
+    .day-tabs span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;gap:6px;align-items:center;}
+    .day-tabs span.active{background:var(--text);color:#fff;border-color:var(--text);}
+    .day-h{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:4px 0 8px;}
+    .cl-chip{display:inline-flex;align-items:center;gap:6px;border-radius:6px;padding:4px 8px;font-size:10.5px;font-weight:700;border:1px solid;}
+    .cl-chip.r{color:var(--red);border-color:#f6c3c8;background:var(--red-soft);}
+    .cl-chip.g{color:var(--green);border-color:#bfe5d2;background:var(--green-soft);}`,
+  render: () => H.shell({
+    rail: 'sched', title: 'Schedules',
+    body: `<div class="day-tabs"><span class="active">All <span class="count">6</span></span><span>Needs approval <span class="count">1</span></span><span>Missing docs <span class="count">1</span></span><span class="hl">${IC.flag}Flagged checklists <span class="count">1</span></span></div>
+      <div class="day-h">Wednesday 12 Aug</div>
+      <div class="list">
+        ${H.bookingRow({ extra: `<span class="cl-chip r hl">${IC.clip}10/10 · 2 flagged</span>` })}
+        ${H.bookingRow({ time: '10:00 AM', code: '#0144', title: 'Final clean', lot: 'Lot 17 Skyview Terrace', extra: `<span class="cl-chip g">${IC.clip}All clear</span>` })}
+        ${H.bookingRow({ time: '11:30 AM', code: '#0147', title: 'Site inspection', lot: 'Lot 9 Riverbend Rd', status: H.pill('In progress', 'amber') })}
+        ${H.bookingRow({ time: '1:00 PM', code: '#0148', title: 'Fencing install', lot: 'Lot 42 Northmead Dr', extra: `<span class="cl-chip g">${IC.clip}All clear</span>` })}
+      </div>
+      <div class="day-h" style="margin-top:14px">Thursday 13 Aug</div>
+      <div class="list">${H.bookingRow({ time: '9:00 AM', code: '#0151', title: 'Landscaping sign-off', lot: 'Lot 3 Harbour View', status: H.pill('Booked', 'green') })}
+        ${H.bookingRow({ time: '2:30 PM', code: '#0153', title: 'Utilities connection', lot: 'Lot 42 Northmead Dr', status: H.pill('Booked', 'green') })}</div>`,
+    overlay: `<div class="pop" style="top:186px;right:44px;width:330px;padding:14px"><span class="pop-caret" style="right:120px"></span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><b style="font-size:13px">#0142 · 2 flagged</b><span class="sub" style="margin:0 0 0 auto">Mike T.</span></div>
+      ${FLAGGED.map(c => `<div class="row" style="padding:8px;margin-bottom:6px"><div class="flag-ic" style="width:24px;height:24px">${IC.flag}</div><div class="row-title" style="font-size:11.5px">Q${c.i + 1}. ${c.q}</div></div>`).join('')}
+      <div style="display:flex;gap:8px;margin-top:4px"><span class="btn" style="flex:1;justify-content:center">Open booking</span><span class="btn dark" style="flex:1;justify-content:center">Open checklist</span></div></div>`,
+  }),
+},
+);
+</script>
+
+<!-- OPTIONS 8+ -->
+<script>
+/* ======================= Options from opts-a.js ======================= */
+/* ======================= Options 8–12 ======================= */
+OPTIONS.push(
+{
+  no: 8, cat: 'page', name: 'Answered-by avatars',
+  desc: 'The header shows who filled in the checklist as a small stack of faces. Tapping a face shows only that person\'s answers, marks where they disagree with the others, and offers Call or Message.',
+  pros: ['See who was on the checklist at a glance', 'Explains a flag through the person who raised it', 'Call or message them from the same place'],
+  cons: ['Small tap targets in the meta row', 'Doesn\'t say which questions are flagged until you tap'],
+  css: `.o8-by{display:inline-flex;align-items:center;gap:6px;border-radius:999px;}
+    .o8-stack{display:inline-flex;}
+    .o8-stack .avatar{border:2px solid #fff;margin-left:-4px;}
+    .o8-stack .avatar:first-child{margin-left:0;}
+    .o8-stack .avatar.o8-sel{box-shadow:0 0 0 2px var(--text);position:relative;z-index:1;}
+    .o8-by b{color:var(--text);font-weight:600;}
+    .o8-pop{top:136px;left:250px;width:392px;padding:14px;}
+    .o8-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .o8-top b{font-size:13px;}
+    .o8-sum{display:flex;gap:6px;margin-bottom:4px;}
+    .o8-item{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);}
+    .o8-item:first-of-type{border-top:none;}
+    .o8-line{display:flex;align-items:center;gap:8px;margin-top:5px;}
+    .o8-line time{font-size:10.5px;color:var(--muted);}
+    .o8-note{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:10.5px;font-weight:600;border-radius:4px;padding:2px 7px;}
+    .o8-note svg{width:11px;height:11px;}
+    .o8-note.o8-diff{color:var(--amber);background:var(--amber-soft);}
+    .o8-note.o8-same{color:var(--muted);background:var(--soft);}
+    .o8-acts{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
+    .o8-acts .btn{flex:1;justify-content:center;}`,
+  render: () => {
+    const mine = CHECKLIST.filter(c => c.responses.some(r => r.by === 'PR'));
+    const items = mine.map(c => {
+      const r = c.responses.find(x => x.by === 'PR');
+      const others = c.responses.filter(x => x.by !== 'PR');
+      const diff = others.filter(x => x.ans !== r.ans);
+      return `<div class="o8-item"><span class="q-num ${c.flagged ? 'red' : ''}">${c.i + 1}</span><div class="resp-main">
+        <div class="q-text" style="font-size:11.5px">${c.q}</div>
+        <div class="o8-line"><span class="ans ${r.ans.toLowerCase()}">${r.ans}</span><time>${r.time}</time>${r.ans === c.flag ? H.pill('Raised the flag', 'flag', 'sm') : ''}${(r.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        ${diff.length
+          ? `<span class="o8-note o8-diff">${IC.warn}Differs · ${diff.map(x => PEOPLE[x.by]).join(' & ')} said "${diff[0].ans}"</span>`
+          : `<span class="o8-note o8-same">${IC.check}Same as ${others.map(x => PEOPLE[x.by]).join(' & ')}</span>`}
+      </div></div>`;
+    }).join('');
+    return H.page({
+      left: [H.header({ metaExtra: `<span class="sep"></span><span class="o8-by hl">Answered by <span class="o8-stack">${H.av('MT')}<div class="avatar sm pr o8-sel">PR</div>${H.av('SK')}</span>· <b>17</b> responses</span>` }), H.docs(), H.hazards(), H.visits()],
+      overlay: `<div class="pop o8-pop"><span class="pop-caret" style="left:164px"></span>
+        <div class="o8-top">${H.av('PR', 'md')}<div><b>Priya R.</b><div class="sub">Answered 3 of 10 · all on 11-08-2026</div></div><span class="x" style="margin-left:auto;width:26px;height:26px">${IC.x}</span></div>
+        <div class="o8-sum">${H.pill('2 differ from the others', 'amber', 'sm')}${H.pill('Raised 1 flag', 'flag', 'sm')}</div>
+        ${items}
+        <div class="o8-acts"><span class="btn lg">${IC.phone}Call</span><span class="btn dark lg">${IC.chat}Message</span></div></div>`,
+    });
+  },
+},
+{
+  no: 9, cat: 'page', name: 'Sign-off receipt',
+  desc: 'Tapping the Completed pill opens a receipt that proves the handover was signed off: who signed, when, the statement they ticked, the result and the signed PDF. "Open checklist" goes to the answers.',
+  pros: ['Settles "who closed this and when?" in one tap', 'Signed PDF is right there to show a client', 'Reuses the pill everyone already looks at'],
+  cons: ['Hidden until you tap the pill', 'Flagged questions are only a count, not detail'],
+  css: `.o9-pill svg{width:11px;height:11px;}
+    .o9-pop{top:196px;left:96px;width:412px;padding:14px;}
+    .o9-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .o9-seal{width:34px;height:34px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none;}
+    .o9-seal svg{width:17px;height:17px;stroke-width:2.5;}
+    .o9-head b{font-size:13.5px;}
+    .o9-sig{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px;}
+    .o9-sig .pill{margin-left:auto;}
+    .o9-decl{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:8px;}
+    .o9-box{width:18px;height:18px;border-radius:4px;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px;}
+    .o9-box svg{width:12px;height:12px;stroke-width:3;}
+    .o9-decl p{font-size:11.5px;line-height:1.45;color:var(--text);}
+    .o9-decl .sub{margin-top:3px;}
+    .o9-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0;}
+    .o9-stats div{background:var(--soft);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;color:var(--muted);}
+    .o9-stats b{display:block;font-size:15px;color:var(--text);}
+    .o9-pop .resp-note{margin:5px 0 10px;}`,
+  render: () => H.page({
+    left: [H.header({ pill: `<span class="pill completed hl o9-pill">${IC.check}Completed${IC.down}</span>` }), H.docs(), H.hazards(), H.visits()],
+    overlay: `<div class="pop o9-pop"><span class="pop-caret" style="left:40px"></span>
+      <div class="o9-head"><div class="o9-seal">${IC.check}</div><div><b>Completed and signed off</b><div class="sub">Handover checklist · Client handover #0142</div></div><span class="x" style="margin-left:auto;width:26px;height:26px">${IC.x}</span></div>
+      <div class="o9-sig">${H.av('MT', 'md')}<div><div class="row-title">Signed by Mike T.</div><div class="sub">12-08-2026, 02:40 PM · on site, Lot 42 Northmead</div></div>${H.pill(`${IC.check}Signed`, 'green', 'sm')}</div>
+      <div class="o9-decl"><span class="o9-box">${IC.check}</span><div><p>"I confirm the handover checklist is complete and accurate."</p><div class="sub">Ticked by Mike T. before submitting</div></div></div>
+      <div class="o9-stats"><div><b>10/10</b>answered</div><div><b style="color:var(--red)">2</b>flagged</div><div><b>17</b>responses</div></div>
+      <div class="eyebrow-sm">Completion comment</div>
+      <div class="resp-note">Handover walked with the client. Skip bin pickup rebooked; defects logged with Amelia Marsh for rectification.</div>
+      <div class="file">${IC.pdf}<div><div class="file-name">handover-signoff.pdf</div><div class="sub" style="margin-top:0">Signed copy · 2.5 KB</div></div><div class="file-actions">${IC.eye}${IC.dl}</div></div>
+      <span class="btn dark lg" style="width:100%;justify-content:center;margin-top:10px">Open checklist ${IC.right}</span></div>`,
+  }),
+},
+{
+  no: 10, cat: 'page', name: 'Fingerprint strip',
+  desc: 'Under the Completed pill, ten tiny cells show the checklist result: green for clear, red for flagged. Tapping the strip labels the cells, and the same strip can sit on any list row.',
+  pros: ['Whole result in a thumbnail-sized strip', 'Shows where the problems are, not just how many', 'Same strip works on schedule and dashboard rows'],
+  cons: ['Cells are too small to read without the legend', 'Colour alone carries the meaning'],
+  css: `.o10-fp{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:8px;width:max-content;padding:2px;}
+    .o10-fp > span:last-child{font-size:10px;font-weight:600;color:var(--muted);}
+    .o10-fp b{color:var(--red);font-weight:700;}
+    .o10-pop{top:238px;left:90px;width:404px;padding:14px;}
+    .o10-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+    .o10-top b{font-size:13px;}
+    .o10-big{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-bottom:10px;}
+    .o10-big div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9.5px;font-weight:600;color:var(--faint);}
+    .o10-big i{width:100%;height:24px;border-radius:4px;background:var(--green);display:block;}
+    .o10-big .r i{background:var(--red);box-shadow:0 0 0 2px #fff,0 0 0 3px var(--red);}
+    .o10-big .r{color:var(--red);font-weight:700;}
+    .o10-pop .row{padding:8px;margin-bottom:6px;}
+    .o10-legend{display:flex;gap:14px;font-size:10.5px;color:var(--muted);margin:8px 0 12px;}
+    .o10-legend span{display:inline-flex;align-items:center;gap:5px;}
+    .o10-legend .fp i{width:6px;height:10px;}
+    .o10-scale{border-top:1px solid var(--line);padding-top:10px;}
+    .o10-chip{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:999px;padding:3px 9px;}
+    .o10-chip svg{width:11px;height:11px;}
+    .o10-mini{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:11px;}
+    .o10-mini b,.o10-mini span{font-size:11px;white-space:nowrap;}
+    .o10-mini .fp{margin-left:auto;}`,
+  render: () => H.page({
+    left: [H.header({ statusExtra: `<div class="o10-fp hl">${H.fingerprint()}<span>8/10 clear · <b>2 flagged</b></span></div>` }), H.docs(), H.hazards(), H.visits()],
+    overlay: `<div class="pop o10-pop"><span class="pop-caret" style="left:69px"></span>
+      <div class="o10-top">${IC.clip}<b>Checklist at a glance</b><span class="sub" style="margin:0 0 0 auto">1 cell = 1 question</span></div>
+      <div class="o10-big">${CHECKLIST.map(c => `<div class="${c.flagged ? 'r' : ''}"><i></i>${c.flagged ? 'Q' : ''}${c.i + 1}</div>`).join('')}</div>
+      ${FLAGGED.map(c => `<div class="row"><span class="q-num red">${c.i + 1}</span><div><div class="row-title" style="font-size:11.5px">${c.q}</div><div class="sub">${c.responses.filter(r => r.ans === c.flag).map(r => PEOPLE[r.by]).join(' & ')} said "${c.flag}"</div></div><span style="margin-left:auto;color:var(--faint);display:inline-flex">${IC.right}</span></div>`).join('')}
+      <div class="o10-legend"><span><span class="fp"><i></i></span>Clear</span><span><span class="fp"><i class="r"></i></span>Flagged</span><span><span class="fp"><i class="g"></i></span>Not answered yet</span></div>
+      <div class="o10-scale"><span class="o10-chip">${IC.menu}Same strip on list rows</span>
+        <div class="o10-mini"><b>8:30 AM</b><span>Client handover · Lot 42</span>${H.fingerprint()}${H.pill('Completed', 'green', 'sm')}</div></div></div>`,
+  }),
+},
+{
+  no: 11, cat: 'open', name: 'Question sheet with actions',
+  desc: 'Tapping a flagged item raises a half-height sheet with just that question and its answers. A bar pinned at the bottom holds the follow-ups, and the arrows step to the other flagged question.',
+  pros: ['Goes straight from "what\'s wrong" to "do something"', 'Handover page stays in view behind', 'Two taps to walk both flagged items'],
+  cons: ['One question at a time', 'Action bar takes space from the answers'],
+  css: `.o11-src{border-color:var(--text);box-shadow:0 0 0 1px var(--text);}
+    .o11-head{display:flex;align-items:center;gap:12px;padding:4px 18px 12px;}
+    .o11-head h3{font-size:16px;font-weight:700;margin-top:5px;}
+    .o11-step{margin-left:auto;display:flex;align-items:center;gap:6px;}
+    .o11-pos{font-size:11px;color:var(--muted);padding:0 4px;}
+    .o11-pos b{color:var(--text);}
+    .o11-off{opacity:.4;}
+    .o11-resps{display:grid;grid-template-columns:1.1fr .95fr 1.05fr;gap:10px;padding:0 18px;align-items:start;}
+    .o11-resps .resp{border:1px solid var(--line);border-radius:10px;}
+    .o11-resps .resp + .resp{border-top:1px solid var(--line);}
+    .o11-resps .files{grid-template-columns:1fr;}
+    .o11-resps .photo{width:72px !important;height:72px !important;}
+    .o11-bar{margin-top:auto;display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding:12px 18px;background:#fff;}
+    .o11-bar .sub{margin:0;display:flex;align-items:center;gap:6px;}
+    .o11-acts{margin-left:auto;display:flex;gap:8px;}`,
+  render: () => H.page({
+    right: [`<section class="card"><div class="card-head"><h3>${IC.clip}Handover checklist</h3>${H.pill('2 flagged', 'flag', 'sm')}<span class="btn">View all</span></div>
+      <div class="list">${FLAGGED.map(c => `<div class="row ${c.i === 4 ? 'o11-src' : ''}"><div class="flag-ic">${IC.flag}</div><div><div class="row-title" style="font-size:11.5px">Q${c.i + 1}. ${c.q}</div><div class="sub">${c.responses.filter(r => r.ans === c.flag).map(r => PEOPLE[r.by]).join(' & ')} said "${c.flag}"</div></div><span style="margin-left:auto;color:var(--faint);display:inline-flex">${IC.right}</span></div>`).join('')}</div></section>`, H.contractor()],
+    overlay: `<div class="dim" style="left:64px"></div><div class="sheet" style="height:344px">
+      <div class="handle"></div>
+      <div class="o11-head"><div><div style="display:flex;align-items:center;gap:8px"><span class="eyebrow-sm">Question 5 of 10</span>${H.pill('Flagged', 'flag', 'sm')}<span class="sub" style="margin:0">2 of 3 answered "Yes"</span></div>
+        <h3>${CHECKLIST[4].q}</h3></div>
+        <div class="o11-step hl"><span class="btn">${IC.left}Q2</span><span class="o11-pos"><b>Q5</b> · 2 of 2 flagged</span><span class="btn o11-off">${IC.right}</span></div>
+        <span class="x">${IC.x}</span></div>
+      <div class="o11-resps">${CHECKLIST[4].responses.map(r => H.resp(CHECKLIST[4], r)).join('')}</div>
+      <div class="o11-bar"><span class="sub">${IC.clock}Amelia Marsh notified 11-08-2026 · no reply yet</span>
+        <div class="o11-acts hl"><span class="btn lg">${IC.history}Ask to re-check</span><span class="btn lg">${IC.share}Send to contractor</span><span class="btn lg">${IC.chat}Add note</span><span class="btn primary lg">${IC.check}Mark followed up</span></div></div></div>`,
+  }),
+},
+{
+  no: 12, cat: 'open', name: 'View logs history',
+  desc: 'The web portal\'s "View logs" link on each question opens a side panel with that question\'s full history as a timeline. Every answer shows what it changed and what it set off, with before and after values.',
+  pros: ['Answers "why did the date move?" without asking anyone', 'Same log as the web portal', 'Handover page stays visible on the left'],
+  cons: ['One question\'s history at a time', 'Detail most supervisors rarely need'],
+  css: `.o12-src{border-color:var(--text);}
+    .o12-side{position:absolute;top:0;right:0;bottom:0;width:468px;background:#fff;border-radius:16px 0 0 16px;box-shadow:-12px 0 30px rgba(0,0,0,.16);display:flex;flex-direction:column;}
+    .o12-head{padding:16px 18px 12px;border-bottom:1px solid var(--line);}
+    .o12-head h2{font-size:15px;font-weight:700;margin:5px 0 8px;}
+    .o12-row{display:flex;align-items:center;gap:8px;}
+    .o12-tl{flex:1;padding:14px 18px 0;overflow:hidden;}
+    .o12-ev{display:flex;gap:12px;position:relative;padding-bottom:14px;}
+    .o12-ev::before{content:"";position:absolute;left:10px;top:24px;bottom:2px;width:2px;background:var(--line);}
+    .o12-ev:last-child::before{display:none;}
+    .o12-dot{width:22px;height:22px;border-radius:50%;background:var(--soft);border:1px solid var(--line-strong);color:var(--muted);display:flex;align-items:center;justify-content:center;flex:none;}
+    .o12-dot svg{width:11px;height:11px;}
+    .o12-evh{display:flex;align-items:center;gap:8px;min-height:22px;}
+    .o12-evh b{font-size:12px;font-weight:600;}
+    .o12-evh time{margin-left:auto;font-size:10.5px;color:var(--muted);white-space:nowrap;}
+    .o12-chg{display:flex;align-items:center;gap:8px;margin-top:6px;border:1px solid var(--line);background:var(--soft);border-radius:6px;padding:6px 9px;font-size:11px;}
+    .o12-chg .o12-ic{display:inline-flex;color:var(--muted);}
+    .o12-chg .o12-ic svg{width:12px;height:12px;}
+    .o12-chg .o12-k{font-weight:600;color:var(--muted);min-width:96px;}
+    .o12-old{color:var(--muted);text-decoration:line-through;}
+    .o12-arr{color:var(--faint);}
+    .o12-new{font-weight:700;}
+    .o12-new.red{color:var(--red);}
+    .o12-chg .o12-t{margin-left:auto;font-size:10px;color:var(--faint);}
+    .o12-tl .resp-note{margin-top:6px;padding:6px 9px;font-size:11px;}
+    .o12-foot{border-top:1px solid var(--line);padding:12px 18px;display:flex;align-items:center;gap:8px;}`,
+  render: () => {
+    const chg = (icon, k, before, after, extra = '') => `<div class="o12-chg"><span class="o12-ic">${icon}</span><span class="o12-k">${k}</span>${before ? `<span class="o12-old">${before}</span><span class="o12-arr">→</span>` : ''}${after}${extra}</div>`;
+    const ev = (dot, head, time, body = '') => `<div class="o12-ev">${dot}<div class="resp-main"><div class="o12-evh">${head}<time>${time}</time></div>${body}</div></div>`;
+    const ans = by => { const r = CHECKLIST[1].responses.find(x => x.by === by); return [`${H.av(by)}`, `<b>${PEOPLE[by]}</b> answered <span class="ans ${r.ans.toLowerCase()}">${r.ans}</span>`, r.time]; };
+    const [mtAv, mtHead, mtTime] = ans('MT');
+    const [prAv, prHead, prTime] = ans('PR');
+    const [skAv, skHead, skTime] = ans('SK');
+    const q2 = H.q(CHECKLIST[1]).replace('<div class="q ', '<div class="q o12-src ').replace('<span class="q-tail">', `<span class="q-tail"><span class="btn">${IC.history}View logs</span>`);
+    return H.page({
+      left: [H.header(), `<section class="card"><div class="card-head"><h3>${IC.clip}Handover checklist <span class="count">10</span></h3>${H.pill('2 flagged', 'flag', 'sm')}</div>
+        <div class="cl-list">${H.q(CHECKLIST[0])}${q2}${H.q(CHECKLIST[2])}${H.q(CHECKLIST[3])}${H.q(CHECKLIST[4])}${H.q(CHECKLIST[5])}</div></section>`],
+      overlay: `<div class="dim" style="left:64px"></div><aside class="o12-side">
+        <div class="o12-head"><div class="o12-row"><span class="eyebrow-sm">View logs · Question 2 of 10</span><span class="x" style="margin-left:auto;width:28px;height:28px">${IC.x}</span></div>
+          <h2>${CHECKLIST[1].q}</h2>
+          <div class="o12-row">${H.pill('Flagged', 'flag', 'sm')}<span class="sub" style="margin:0">3 answers · 5 actions · last change 12-08-2026, 02:40 PM</span></div>
+          <div style="margin-top:10px">${H.seg([['All'], ['Answers', 3], ['Actions', 5]])}</div></div>
+        <div class="o12-tl"><div class="hl">
+          ${ev(`<span class="o12-dot">${IC.check}</span>`, `<b>Checklist submitted</b><span class="sub" style="margin:0">by Mike T.</span>`, '12-08-2026, 02:40 PM',
+            chg(IC.clip, 'Q2 result', '', `<span class="o12-new red">Flagged</span>`, `<span class="o12-t">locked</span>`))}
+          ${ev(mtAv, mtHead, mtTime,
+            `<div class="resp-note"><b>Note added:</b> ${CHECKLIST[1].responses[0].note}</div>`
+            + chg(IC.cal, 'Schedule date', '12-08-2026', `<span class="o12-new">18-08-2026</span>`))}
+          ${ev(prAv, prHead, prTime,
+            chg(IC.flag, 'Question result', 'Clear', `<span class="o12-new red">Flagged</span>`)
+            + chg(IC.bell, 'Staff notified', '', `<span class="o12-arr">→</span><span class="o12-new">Amelia Marsh</span>`, `<span class="o12-t">push + email</span>`))}
+          ${ev(skAv, skHead, skTime,
+            chg(IC.circle, 'Booking status', 'Booked', `<span class="o12-new">In progress</span>`)
+            + chg(IC.flag, 'Question result', 'Not answered', `<span class="o12-new" style="color:var(--green)">Clear</span>`))}
+          ${ev(`<span class="o12-dot">${IC.clip}</span>`, `<b>Checklist sent to crew</b>`, '10-08-2026, 09:00 AM',
+            chg(IC.warn, 'Flag rule', '', `<span class="o12-new">Answer "No"</span>`, `<span class="o12-t">flag + notify contractor</span>`))}
+        </div></div>
+        <div class="o12-foot"><span class="sub" style="margin:0">Showing all 5 entries · oldest at the bottom</span><span class="btn" style="margin-left:auto">${IC.dl}Export log</span></div></aside>`,
+    });
+  },
+},
+);
+
+</script>
+<script>
+/* ======================= Options from opts-b.js ======================= */
+/* ======================= Options 13–17 (formats) ======================= */
+OPTIONS.push(
+{
+  no: 13, cat: 'format', name: 'Verdict scorecard',
+  desc: 'The checklist opens on a scorecard: a ring with one segment per question, a one-line verdict and four stat tiles. Tapping a tile filters the list below it; here "Flagged" is selected.',
+  pros: ['Outcome readable at a glance', 'The ring shows where the problems sit (Q2, Q5)', 'Tiles double as filters'],
+  cons: ['The scorecard takes up the top of the screen', 'A one-line verdict can hide the detail'],
+  css: `.o13-body{flex:1;min-height:0;padding:14px 20px;display:flex;flex-direction:column;gap:12px;}
+    .o13-score{display:flex;align-items:center;gap:18px;padding:14px 16px;}
+    .o13-ring{position:relative;width:100px;height:100px;flex:none;}
+    .o13-ring svg{width:100px;height:100px;}
+    .o13-ring circle{stroke-width:11;stroke-linecap:butt;}
+    .o13-ring circle.o13-g{stroke:var(--green);}
+    .o13-ring circle.o13-r{stroke:var(--red);}
+    .o13-ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .o13-ring-c b{font-size:22px;font-weight:800;line-height:1;letter-spacing:-.5px;}
+    .o13-ring-c span{font-size:9px;font-weight:600;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
+    .o13-verdict{flex:1;min-width:0;}
+    .o13-verdict h3{font-size:19px;font-weight:800;letter-spacing:-.3px;margin:5px 0 4px;white-space:nowrap;}
+    .o13-verdict h3 i{font-style:normal;color:var(--faint);font-weight:600;margin:0 3px;}
+    .o13-verdict h3 em{font-style:normal;color:var(--red);}
+    .o13-why{font-size:11.5px;color:var(--muted);line-height:1.5;}
+    .o13-by{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:11px;color:var(--muted);line-height:1.35;}
+    .o13-by b{color:var(--text);font-weight:600;}
+    .o13-stack{display:flex;padding-left:5px;flex:none;}
+    .o13-stack .avatar{margin-left:-5px;box-shadow:0 0 0 2px var(--card);}
+    .o13-tiles{display:grid;grid-template-columns:repeat(4,108px);gap:8px;flex:none;}
+    .o13-tile{position:relative;border:1px solid var(--line);border-radius:10px;padding:10px 10px 9px;background:var(--card);}
+    .o13-tile .lbl{margin-bottom:6px;}
+    .o13-tile b{display:block;font-size:20px;font-weight:800;line-height:1.1;letter-spacing:-.3px;}
+    .o13-tile .sub{white-space:nowrap;font-size:10px;}
+    .o13-chev{position:absolute;top:9px;right:7px;color:var(--faint);display:inline-flex;}
+    .o13-chev svg{width:12px;height:12px;}
+    .o13-tile.o13-on{border-color:var(--red);background:var(--red-soft);box-shadow:inset 0 0 0 1px var(--red);}
+    .o13-tile.o13-on .lbl,.o13-tile.o13-on b,.o13-tile.o13-on .o13-chev{color:var(--red);}
+    .o13-lh{display:flex;align-items:center;gap:8px;}
+    .o13-lh .btn{margin-left:auto;}
+    .o13-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;}
+    .o13-clear{background:var(--card);}
+    .o13-clear .o13-ok{width:30px;height:30px;border-radius:6px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none;}`,
+  render: () => {
+    const C = 2 * Math.PI * 40, seg = C / 10, gap = 2.4;
+    const ring = `<svg viewBox="0 0 100 100">${CHECKLIST.map(c => `<circle class="${c.flagged ? 'o13-r' : 'o13-g'}" cx="50" cy="50" r="40" stroke-dasharray="${(seg - gap).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-(c.i * seg + gap / 2)).toFixed(2)}" transform="rotate(-90 50 50)"/>`).join('')}</svg>`;
+    const total = CHECKLIST.reduce((n, c) => n + c.responses.length, 0);
+    const clearQs = CHECKLIST.filter(c => !c.flagged);
+    const clearResp = clearQs.reduce((n, c) => n + c.responses.length, 0);
+    const tiles = [
+      ['Answered', IC.check, `${CHECKLIST.length}/${CHECKLIST.length}`, 'all questions', ''],
+      ['Flagged', IC.flag, FLAGGED.length, FLAGGED.map(c => `Q${c.i + 1}`).join(' · '), 'o13-on'],
+      ['Responses', IC.user, total, 'from 3 people', ''],
+      ['Evidence', IC.img, '5 files', '3 photos · 2 PDFs', ''],
+    ];
+    return H.shell({
+      overlay: `<div class="screen"><div class="screen-head"><span class="btn">${IC.back}Client handover</span><h2>Handover checklist</h2>${H.pill('Completed', 'completed')}
+        <div class="right"><span class="btn">${IC.share}Share</span><span class="btn">${IC.dl}PDF</span></div></div>
+      <div class="o13-body">
+        <section class="card o13-score hl">
+          <div class="o13-ring">${ring}<div class="o13-ring-c"><b>${clearQs.length}/${CHECKLIST.length}</b><span>clear</span></div></div>
+          <div class="o13-verdict"><span class="eyebrow-sm">Verdict</span>
+            <h3>Handed over<i>·</i><em>2 exceptions</em></h3>
+            <p class="o13-why">Priya R. says the client wasn't present (Q2). Mike T. and Sarah K. found defects in the contractor work (Q5).</p>
+            <div class="o13-by"><span class="o13-stack">${H.av('MT')}${H.av('PR')}${H.av('SK')}</span><span>Submitted by <b>Mike T.</b><br>12-08-2026, 02:40 PM</span></div></div>
+          <div class="o13-tiles">${tiles.map(([l, ic, v, s, on]) => `<div class="o13-tile ${on}"><span class="o13-chev">${IC.right}</span><div class="lbl">${ic}${l}</div><b>${v}</b><div class="sub">${s}</div></div>`).join('')}</div>
+        </section>
+        <div class="o13-lh"><span class="eyebrow-sm">Showing flagged · ${FLAGGED.length} of ${CHECKLIST.length} questions</span>${H.pill(`Flagged ${IC.x}`, 'red', 'sm')}<span class="btn ghost">Show all ${CHECKLIST.length} ${IC.right}</span></div>
+        <div class="o13-cols"><div class="cl-list">${H.q(FLAGGED[0], { open: true })}
+            <div class="row o13-clear"><div class="o13-ok">${IC.check}</div><div><div class="row-title">${clearQs.length} questions clear</div><div class="sub">Q1, Q3, Q4, Q6–Q10 · ${clearResp} responses, none flagged</div></div><span class="btn">Show</span></div></div>
+          <div class="cl-list">${H.q(FLAGGED[1], { open: true })}</div></div>
+      </div></div>`,
+    });
+  },
+},
+{
+  no: 14, cat: 'format', name: 'Disagreement cards',
+  desc: 'A view that shows only the questions where people gave different answers. Each card splits the people into a "Yes" side and a "No" side, and the supervisor records a ruling with a reason at the bottom.',
+  pros: ['Goes straight to the conflicts', 'Evidence sits next to the person who gave it', 'Leaves a record of who decided and why'],
+  cons: ['Adds a decision step for the supervisor', 'Hides the questions everyone agreed on'],
+  css: `.o14-body{flex:1;min-height:0;padding:14px 20px;display:flex;flex-direction:column;gap:12px;}
+    .o14-top{display:flex;align-items:center;gap:10px;}
+    .o14-top .sub{margin:0;}
+    .o14-card{background:var(--card);border:1px solid var(--line);border-radius:10px;}
+    .o14-card .q-head{padding:9px 14px;min-height:42px;}
+    .o14-sides{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);}
+    .o14-side{min-width:0;}
+    .o14-side + .o14-side{border-left:1px solid var(--line);}
+    .o14-sh{display:flex;align-items:center;gap:8px;padding:6px 14px;background:var(--soft);border-bottom:1px solid var(--line);font-size:11px;}
+    .o14-sh b{font-weight:600;}
+    .o14-side.o14-fl .o14-sh{background:var(--red-soft);}
+    .o14-bar{margin-left:auto;width:64px;height:5px;border-radius:3px;background:var(--line);overflow:hidden;}
+    .o14-bar i{display:block;height:100%;background:var(--green);}
+    .o14-bar.o14-no i{background:var(--red);}
+    .o14-p{display:flex;gap:10px;padding:8px 14px;}
+    .o14-p + .o14-p{border-top:1px dashed var(--line);}
+    .o14-tags{font-size:10.5px;color:var(--muted);margin-top:1px;}
+    .o14-p .resp-note{margin-top:5px;padding:5px 9px;}
+    .o14-ev{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;}
+    .o14-ev .attach{margin-top:0;padding:5px 8px;}
+    .o14-ev .pdf{color:var(--red);}
+    .o14-rule{display:flex;align-items:center;gap:10px;padding:8px 14px;border-top:1px solid var(--line);background:var(--soft);border-radius:0 0 10px 10px;}
+    .o14-pick span{padding:5px 12px;}
+    .o14-pick span.active{background:var(--green-soft);color:var(--green);}
+    .o14-field{flex:1;min-width:0;background:var(--card);border:1px solid var(--line-strong);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .o14-rule.o14-done{background:var(--green-soft);}
+    .o14-ok{width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;}
+    .o14-ok svg{width:12px;height:12px;}
+    .o14-rl{display:flex;align-items:center;gap:8px;}
+    .o14-rl b{font-size:12px;}
+    .o14-reason{font-size:11.5px;color:var(--text);margin-top:2px;}
+    .o14-meta{margin-left:auto;text-align:right;font-size:10.5px;color:var(--muted);line-height:1.4;flex:none;}`,
+  render: () => {
+    const person = r => `<div class="o14-p">${H.av(r.by)}<div class="resp-main">
+      <div class="resp-head"><b>${PEOPLE[r.by]}</b><time>${r.time}</time></div>
+      ${r.tags ? `<div class="o14-tags">${r.tags.join(' · ')}</div>` : ''}
+      ${r.note ? `<div class="resp-note"><b>Note:</b> ${r.note}</div>` : ''}
+      ${r.files || r.photos ? `<div class="o14-ev">${(r.files || []).map(([n, s]) => `<span class="attach">${IC.pdf}${n}<span class="sub" style="margin:0">${s}</span></span>`).join('')}${Array.from({ length: r.photos || 0 }, (_, i) => H.photo(i, 50)).join('')}</div>` : ''}
+    </div></div>`;
+    const side = (c, ans) => {
+      const rs = c.responses.filter(r => r.ans === ans), fl = ans === c.flag;
+      return `<div class="o14-side ${fl ? 'o14-fl' : ''}"><div class="o14-sh"><span class="ans ${ans.toLowerCase()}">${ans}</span><b>${rs.length} ${rs.length === 1 ? 'person' : 'people'}</b>${fl ? H.pill('Raises flag', 'red', 'sm') : ''}
+        <span class="o14-bar ${ans === 'No' ? 'o14-no' : ''}"><i style="width:${Math.round(rs.length / c.responses.length * 100)}%"></i></span></div>${rs.map(person).join('')}</div>`;
+    };
+    const card = (c, status, rule, cls = '') => {
+      const y = c.responses.filter(r => r.ans === 'Yes').length;
+      return `<div class="o14-card ${cls}"><div class="q-head"><span class="q-num red">${c.i + 1}</span><span class="q-text">${c.q}</span>
+        <span class="q-tail"><span class="sub" style="margin:0">${y} Yes · ${c.responses.length - y} No</span>${status}</span></div>
+        <div class="o14-sides">${side(c, 'Yes')}${side(c, 'No')}</div>${rule}</div>`;
+    };
+    const pending = `<div class="o14-rule"><span class="eyebrow-sm">Supervisor ruling</span><div class="seg o14-pick"><span class="active">${IC.check}Yes</span><span>No</span></div>
+      <div class="o14-field">Reason, e.g. client signed the handover sheet on site</div><span class="btn dark">Record ruling</span></div>`;
+    const ruled = `<div class="o14-rule o14-done"><span class="o14-ok">${IC.check}</span><div style="min-width:0"><div class="o14-rl"><span class="eyebrow-sm">Supervisor ruling</span><span class="ans yes">Yes</span><b>Defects confirmed</b></div>
+      <div class="o14-reason">Sarah K.'s photos match Mike T.'s report. Rectification booked with Amelia Marsh.</div></div>
+      <div class="o14-meta">Ruled by you<br>13-08-2026, 09:12 AM</div><span class="btn">Change</span></div>`;
+    return H.shell({
+      overlay: `<div class="screen"><div class="screen-head"><span class="btn">${IC.back}Client handover</span><h2>Handover checklist</h2>${H.pill('Completed', 'completed')}
+        <div class="right">${H.seg([['All', 10], ['Flagged', 2], ['Disagreements', 2]], 2)}</div></div>
+      <div class="o14-body">
+        <div class="o14-top"><span class="eyebrow-sm">2 questions with mixed answers</span><span class="sub">The other 8 were unanimous · 1 ruled, 1 waiting for you</span></div>
+        ${card(CHECKLIST[1], H.pill('Ruling pending', 'amber', 'sm'), pending, 'hl')}
+        ${card(CHECKLIST[4], H.pill(`${IC.check}Ruled`, 'green', 'sm'), ruled)}
+      </div></div>`,
+    });
+  },
+},
+{
+  no: 15, cat: 'format', name: 'Response timeline',
+  desc: 'The checklist is shown in the order it was filled in: one block per person\'s session, each listing the questions they answered with Yes/No chips and attachments. Flagged answers are picked out in red, and the timeline ends at the submission.',
+  pros: ['Shows who did what, and when', 'Explains conflicting answers (different days)', 'Doubles as an audit trail'],
+  cons: ['Hard to find a specific question', 'The same question shows up in several blocks'],
+  css: `.o15-body{flex:1;min-height:0;padding:14px 20px 12px 16px;}
+    .o15-tl{position:relative;padding-left:44px;display:flex;flex-direction:column;gap:10px;}
+    .o15-tl::before{content:"";position:absolute;left:17px;top:16px;bottom:20px;width:2px;background:var(--line-strong);}
+    .o15-blk{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+    .o15-mk{position:absolute;left:-42px;top:10px;border-radius:50%;box-shadow:0 0 0 3px var(--bg);}
+    .o15-bh{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+    .o15-bh b{font-size:13px;font-weight:700;}
+    .o15-bh .sub{margin:0;}
+    .o15-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
+    .o15-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+    .o15-it{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:7px;padding:4px 9px;min-width:0;min-height:34px;}
+    .o15-it time{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none;}
+    .o15-qn{font-size:10px;font-weight:700;color:var(--green);background:var(--green-soft);border-radius:4px;padding:1px 5px;flex:none;}
+    .o15-qt{font-size:11.5px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .o15-att{color:var(--muted);display:inline-flex;flex:none;}
+    .o15-att svg{width:12px;height:12px;}
+    .o15-it .ans{flex:none;}
+    .o15-it.o15-fl{grid-column:span 2;background:var(--red-soft);border-color:var(--red-soft);box-shadow:inset 3px 0 0 var(--red);}
+    .o15-it.o15-wide{grid-column:1 / -1;}
+    .o15-it.o15-fl .o15-qn,.o15-it.o15-fl .pill{background:var(--card);color:var(--red);}
+    .o15-it.o15-fl .o15-qt{flex:0 1 auto;}
+    .o15-flag{color:var(--red);display:inline-flex;flex:none;}
+    .o15-flag svg{width:13px;height:13px;}
+    .o15-ev{margin-left:auto;display:flex;gap:4px;align-items:center;flex:none;}
+    .o15-ev .photo{border-radius:4px;}
+    .o15-file{display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:2px 6px;font-size:10.5px;font-weight:600;}
+    .o15-file svg{width:12px;height:12px;}
+    .o15-file .pdf{color:var(--red);}
+    .o15-day{font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 7px;display:flex;align-items:center;gap:8px;}
+    .o15-day::after{content:"";flex:1;height:1px;background:var(--line);}
+    .o15-grid + .o15-day{margin-top:11px;}
+    .o15-end{position:relative;display:flex;align-items:center;gap:10px;background:var(--green-soft);border:1px solid var(--green);border-radius:10px;padding:10px 14px;}
+    .o15-end b{font-size:12.5px;color:var(--green);}
+    .o15-end .sub{margin:0;}
+    .o15-end .o15-mk{width:28px;height:28px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;top:50%;margin-top:-14px;}`,
+  render: () => {
+    const hm = r => r.time.split(', ')[1].slice(0, 5);
+    const all = CHECKLIST.flatMap(c => c.responses.map(r => ({ c, r, day: r.time.slice(0, 5) })));
+    const pick = (by, day) => all.filter(x => x.r.by === by && x.day === day).sort((a, b) => hm(a.r).localeCompare(hm(b.r)));
+    const cell = ({ c, r }, wide) => {
+      const fl = r.ans === c.flag;
+      const ev = [...(r.files || []).map(([n]) => `<span class="o15-file">${IC.pdf}${n}</span>`), ...Array.from({ length: r.photos || 0 }, (_, i) => H.photo(i, 24))].join('');
+      return `<div class="o15-it${fl ? ' o15-fl' : ''}${fl && wide ? ' o15-wide' : ''}">${fl ? `<span class="o15-flag">${IC.flag}</span>` : ''}<time>${hm(r)}</time><span class="o15-qn">Q${c.i + 1}</span><span class="o15-qt">${c.q}</span>
+        ${!fl && r.note ? `<span class="o15-att">${IC.chat}</span>` : ''}${!fl && r.files ? `<span class="o15-att">${IC.pdf}</span>` : ''}<span class="ans ${r.ans.toLowerCase()}">${r.ans}</span>${fl ? H.pill('Flagged', 'flag', 'sm') : ''}${fl && ev ? `<span class="o15-ev">${ev}</span>` : ''}</div>`;
+    };
+    const span = xs => { const t = xs.map(x => hm(x.r)); return t.length > 1 ? `${t[0]} – ${t[t.length - 1]} PM` : `${t[0]} PM`; };
+    const chips = xs => {
+      const files = xs.reduce((n, x) => n + (x.r.files || []).length, 0), photos = xs.reduce((n, x) => n + (x.r.photos || 0), 0);
+      const fl = xs.filter(x => x.r.ans === x.c.flag).length;
+      return `<span class="tag">${xs.length} answers</span>${photos ? `<span class="tag">${photos} photos</span>` : ''}${files ? `<span class="tag">${files} files</span>` : ''}${fl ? H.pill(`${fl} flagged`, 'flag', 'sm') : ''}`;
+    };
+    const block = (by, groups) => {
+      const xs = groups.flatMap(g => g.items);
+      const when = groups.length > 1 ? groups.map(g => g.label.split(' ')[1]).join(' & ') + '-2026' : `${groups[0].label}-2026 · ${span(xs)}`;
+      return `<div class="o15-blk"><span class="o15-mk">${H.av(by, 'md')}</span>
+        <div class="o15-bh"><b>${PEOPLE[by]}</b><span class="sub">${when}</span><span class="o15-right">${chips(xs)}</span></div>
+        ${groups.map(g => `${groups.length > 1 ? `<div class="o15-day">${g.label}-2026 · ${span(g.items)} · ${g.items.length} ${g.items.length === 1 ? 'answer' : 'answers'}</div>` : ''}<div class="o15-grid">${g.items.map(x => cell(x, g.items.length === 1)).join('')}</div>`).join('')}</div>`;
+    };
+    return H.shell({
+      overlay: `<div class="screen"><div class="screen-head"><span class="btn">${IC.back}Client handover</span><h2>Handover checklist</h2>${H.pill('2 flagged', 'flag')}
+        <div class="right"><span class="sub" style="margin:0">17 responses · 3 people · 3 days</span><span class="hl">${H.seg([['List'], [`${IC.history}Timeline`]], 1)}</span></div></div>
+      <div class="o15-body"><div class="o15-tl hl">
+        ${block('SK', [{ label: 'Mon 10-08', items: pick('SK', '10-08') }])}
+        ${block('PR', [{ label: 'Tue 11-08', items: pick('PR', '11-08') }])}
+        ${block('MT', [{ label: 'Tue 11-08', items: pick('MT', '11-08') }, { label: 'Wed 12-08', items: pick('MT', '12-08') }])}
+        <div class="o15-end"><span class="o15-mk">${IC.check}</span><b>Submitted 12-08-2026 02:40 PM</b><span class="sub">by Mike T. · booking marked Completed · 10/10 answered</span></div>
+      </div></div></div>`,
+    });
+  },
+},
+{
+  no: 16, cat: 'format', name: 'Evidence gallery',
+  desc: 'Every photo and PDF attached anywhere in the checklist, in one grid. Each tile is badged with its question and who added it. Tapping one opens a full-screen viewer with the answer underneath and a link back to the question.',
+  pros: ['All the proof in one place', 'Big photos, easy to swipe through', 'Every file keeps its context (question, person, answer)'],
+  cons: ['Answers without files don\'t appear', 'A second view to keep in sync with the list'],
+  css: `.o16-body{flex:1;min-height:0;padding:12px 20px;display:flex;flex-direction:column;gap:10px;}
+    .o16-filter{display:flex;align-items:center;gap:10px;}
+    .o16-filter .sub{margin:0 0 0 auto;}
+    .o16-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .o16-tile{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+    .o16-th{position:relative;height:150px;background:var(--soft);}
+    .o16-th .photo{width:100% !important;height:100% !important;border:0;border-radius:0;}
+    .o16-badge{position:absolute;top:8px;left:8px;background:var(--rail);color:#fff;font-size:10px;font-weight:700;border-radius:5px;padding:3px 7px;}
+    .o16-fl{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:5px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;}
+    .o16-fl svg{width:12px;height:12px;}
+    .o16-pdf{height:100%;display:flex;align-items:center;justify-content:center;}
+    .o16-pg{width:92px;height:120px;background:var(--card);border:1px solid var(--line);border-radius:4px;box-shadow:0 6px 14px -6px rgba(15,17,25,.25);padding:12px 10px;display:flex;flex-direction:column;gap:6px;}
+    .o16-pg span{color:var(--red);display:inline-flex;margin-bottom:4px;}
+    .o16-pg span svg{width:20px;height:20px;}
+    .o16-pg i{height:4px;border-radius:2px;background:var(--line);display:block;}
+    .o16-pg i.o16-s{width:60%;}
+    .o16-info{display:flex;align-items:center;gap:8px;padding:9px 12px;}
+    .o16-info .sub{white-space:nowrap;}
+    .o16-info .ans{margin-left:auto;}
+    .o16-dark{position:absolute;inset:0 0 0 64px;background:var(--rail);opacity:.84;}
+    .o16-lb{position:absolute;inset:0 0 0 64px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0 20px 14px;color:#fff;}
+    .o16-top{align-self:stretch;margin:0 -20px;height:60px;padding:0 20px;background:var(--rail);display:flex;align-items:center;gap:12px;flex:none;}
+    .o16-count{font-size:12px;font-weight:700;border:1px solid var(--muted);border-radius:999px;padding:5px 12px;}
+    .o16-tt b{display:block;font-size:13px;}
+    .o16-tt span{font-size:10.5px;color:var(--faint);}
+    .o16-acts{margin-left:auto;display:flex;gap:8px;}
+    .o16-ib{width:34px;height:34px;border-radius:50%;border:1px solid var(--muted);display:flex;align-items:center;justify-content:center;}
+    .o16-stage{flex:1;min-height:0;display:flex;align-items:center;gap:22px;}
+    .o16-nav{width:46px;height:46px;border-radius:50%;background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;flex:none;}
+    .o16-nav svg{width:20px;height:20px;}
+    .o16-nav.o16-off{opacity:.3;}
+    .o16-view{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:var(--card);color:var(--text);}
+    .o16-view .photo{border:0;border-radius:0;}
+    .o16-cap{padding:10px 14px 11px;display:flex;flex-direction:column;gap:6px;}
+    .o16-row{display:flex;align-items:center;gap:8px;}
+    .o16-row .sub{margin:0;}
+    .o16-go{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--blue);display:inline-flex;gap:4px;align-items:center;}
+    .o16-strip{display:flex;gap:8px;}
+    .o16-t{position:relative;width:54px;height:40px;border-radius:6px;overflow:hidden;opacity:.5;border:2px solid transparent;}
+    .o16-t.o16-on{opacity:1;border-color:#fff;}
+    .o16-t .photo{width:100% !important;height:100% !important;border:0;border-radius:0;}
+    .o16-t.o16-doc{background:var(--card);color:var(--red);display:flex;align-items:center;justify-content:center;}
+    .o16-t.o16-doc svg{width:16px;height:16px;}`,
+  render: () => {
+    const ev = [];
+    CHECKLIST.forEach(c => c.responses.forEach(r => {
+      for (let k = 0; k < (r.photos || 0); k++) ev.push({ c, r, kind: 'photo', k, name: `Site photo ${k + 1}`, size: ['2.4 MB', '2.1 MB', '2.6 MB'][k % 3] });
+      (r.files || []).forEach(([n, s]) => ev.push({ c, r, kind: 'pdf', name: n, size: s }));
+    }));
+    ev.sort((a, b) => (a.kind === 'photo' ? 0 : 1) - (b.kind === 'photo' ? 0 : 1));
+    const photos = ev.filter(e => e.kind === 'photo').length;
+    const tile = e => `<div class="o16-tile"><div class="o16-th">${e.kind === 'photo' ? H.photo(e.k, 296, 150) : `<div class="o16-pdf"><div class="o16-pg"><span>${IC.pdf}</span><i></i><i></i><i class="o16-s"></i><i></i><i class="o16-s"></i></div></div>`}
+        <span class="o16-badge">Q${e.c.i + 1} · ${PEOPLE[e.r.by]}</span>${e.r.ans === e.c.flag ? `<span class="o16-fl">${IC.flag}</span>` : ''}</div>
+      <div class="o16-info"><div style="min-width:0"><div class="file-name">${e.name}</div><div class="sub">${e.r.time} · ${e.size}</div></div><span class="ans ${e.r.ans.toLowerCase()}">${e.r.ans}</span></div></div>`;
+    const cur = ev[0], c = cur.c, r = cur.r;
+    return H.shell({
+      overlay: `<div class="screen"><div class="screen-head"><span class="btn">${IC.back}Checklist</span><h2>Evidence</h2><span class="count">${ev.length}</span>
+        <div class="right"><span class="btn">${IC.dl}Download all</span></div></div>
+        <div class="o16-body"><div class="o16-filter">${H.seg([['All', ev.length], ['Photos', photos], ['PDFs', ev.length - photos]])}<span class="sub">From Q5 and Q7 · newest answer first</span></div>
+          <div class="o16-grid">${ev.map(tile).join('')}</div></div></div>
+      <div class="o16-dark"></div>
+      <div class="o16-lb">
+        <div class="o16-top"><span class="o16-count">1 / ${ev.length}</span><div class="o16-tt"><b>${cur.name}</b><span>Q${c.i + 1} · ${PEOPLE[r.by]} · photo 1 of ${photos} · ${cur.size}</span></div>
+          <div class="o16-acts"><span class="o16-ib">${IC.dl}</span><span class="o16-ib">${IC.share}</span><span class="o16-ib">${IC.x}</span></div></div>
+        <div class="o16-stage"><span class="o16-nav o16-off">${IC.left}</span>
+          <div class="o16-view hl">${H.photo(cur.k, 640, 380)}
+            <div class="o16-cap"><div class="o16-row"><span class="q-num red">${c.i + 1}</span><span class="q-text">${c.q}</span>${H.pill('Flagged', 'flag', 'sm')}</div>
+              <div class="o16-row">${H.av(r.by)}<b style="font-size:12px">${PEOPLE[r.by]}</b><span class="ans ${r.ans.toLowerCase()}">${r.ans}</span><span class="sub">${r.time} · ${r.tags.join(' · ')}</span><span class="o16-go">Go to question ${IC.right}</span></div></div></div>
+          <span class="o16-nav">${IC.right}</span></div>
+        <div class="o16-strip">${ev.map((e, i) => `<span class="o16-t ${e.kind === 'pdf' ? 'o16-doc' : ''} ${i === 0 ? 'o16-on' : ''}">${e.kind === 'photo' ? H.photo(e.k, 54, 40) : IC.pdf}</span>`).join('')}</div>
+      </div>`,
+    });
+  },
+},
+{
+  no: 17, cat: 'format', name: 'Signed report preview',
+  desc: 'The checklist is shown as the signed PDF report that gets filed: an A4 page with the booking details, every answer in one table, the exceptions with notes and photos, and Mike T.\'s signature with a verification code. Share, Print and Download PDF sit in the toolbar.',
+  pros: ['Exactly what the client and contractor receive', 'Formal record: signed and verifiable', 'Works offline and prints cleanly'],
+  cons: ['Small text on a tablet, so zooming is needed', 'Read-only: you can\'t tap through to a photo'],
+  css: `.o17-scr{background:var(--muted);}
+    .o17-tb{height:50px;background:var(--rail);color:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;flex:none;}
+    .o17-tbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--muted);border-radius:7px;padding:6px 10px;font-size:11px;font-weight:600;white-space:nowrap;}
+    .o17-fn b{display:block;font-size:12px;font-weight:600;}
+    .o17-fn span{font-size:10px;color:var(--faint);}
+    .o17-mid{margin:0 auto;display:flex;gap:10px;}
+    .o17-grp{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--muted);border-radius:7px;padding:2px;font-size:11px;font-weight:600;}
+    .o17-grp > b{padding:0 6px;min-width:46px;text-align:center;font-weight:600;}
+    .o17-ib{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--faint);}
+    .o17-right{display:flex;gap:8px;align-items:center;}
+    .o17-body{flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start;gap:22px;padding:12px 20px;}
+    .o17-thumbs{width:74px;display:flex;flex-direction:column;gap:6px;align-items:center;flex:none;padding-top:4px;}
+    .o17-n{font-size:10px;color:#fff;font-weight:600;margin-bottom:6px;}
+    .o17-mini{width:66px;height:93px;background:var(--card);border-radius:2px;padding:7px 6px;display:flex;flex-direction:column;gap:3px;}
+    .o17-mini.o17-on{outline:2px solid var(--red);outline-offset:2px;}
+    .o17-mini i{display:block;height:2px;background:var(--line-strong);}
+    .o17-mini i.o17-hd{height:4px;width:60%;background:var(--text);}
+    .o17-mini i.o17-rl{height:1px;background:var(--red);margin-bottom:2px;}
+    .o17-mini i.o17-s{width:55%;}
+    .o17-ph{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:2px 0;}
+    .o17-ph u{display:block;height:18px;background:var(--line-strong);border-radius:1px;}
+    .o17-a4{width:460px;height:650px;flex:none;background:var(--card);box-shadow:0 14px 34px rgba(0,0,0,.35);padding:24px 26px 14px;display:flex;flex-direction:column;font-size:8px;line-height:1.4;color:var(--text);border-radius:1px;}
+    .o17-lh{display:flex;align-items:center;gap:8px;padding-bottom:9px;border-bottom:2px solid var(--red);}
+    .o17-logo{width:26px;height:26px;border-radius:5px;background:var(--rail);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;letter-spacing:-.5px;}
+    .o17-logo span{color:var(--red);}
+    .o17-brand b{display:block;font-size:11px;font-weight:800;line-height:1.2;}
+    .o17-brand span{font-size:7px;color:var(--muted);}
+    .o17-ref{margin-left:auto;text-align:right;}
+    .o17-ref b{display:block;font-size:8.5px;margin-top:1px;}
+    .o17-ref .o17-e{color:var(--red);font-weight:700;letter-spacing:.1em;font-size:6.5px;}
+    .o17-e{font-size:6px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+    .o17-h1{font-size:12.5px;font-weight:800;margin:10px 0 7px;}
+    .o17-kv{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:4px;}
+    .o17-kv div{padding:4px 7px;border-bottom:1px solid var(--line);}
+    .o17-kv div:nth-child(n+4){border-bottom:0;}
+    .o17-kv div:not(:nth-child(3n+1)){border-left:1px solid var(--line);}
+    .o17-kv span{display:block;font-size:6px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1px;}
+    .o17-kv b{font-size:8px;font-weight:600;}
+    .o17-sum{margin:8px 0;background:var(--soft);border-left:2px solid var(--red);padding:5px 8px;}
+    .o17-t{width:100%;border-collapse:collapse;font-size:7.5px;}
+    .o17-t th{text-align:left;font-size:6px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:3px 5px;border-bottom:1px solid var(--line-strong);}
+    .o17-t td{padding:3px 5px;border-bottom:1px solid var(--line);white-space:nowrap;}
+    .o17-t tr.o17-xr td{background:var(--red-soft);}
+    .o17-ok{color:var(--green);font-weight:700;}
+    .o17-bad{color:var(--red);font-weight:700;}
+    .o17-m{color:var(--muted);}
+    .o17-h2{font-size:9px;font-weight:800;margin:10px 0 5px;}
+    .o17-ex{display:flex;gap:8px;align-items:flex-start;padding:5px 8px;border:1px solid var(--line);border-left:2px solid var(--red);border-radius:3px;margin-bottom:5px;}
+    .o17-ex p{flex:1;min-width:0;}
+    .o17-ex .photo{border-radius:3px;}
+    .o17-sig{margin-top:auto;display:flex;align-items:flex-end;gap:14px;padding-top:8px;}
+    .o17-sig-l{flex:1;}
+    .o17-sig svg.o17-sg{width:118px;height:30px;stroke:var(--text);stroke-width:1.4;display:block;}
+    .o17-line{border-top:1px solid var(--text);padding-top:3px;width:200px;}
+    .o17-code{text-align:right;}
+    .o17-code b{display:block;font-size:9px;letter-spacing:.04em;margin:1px 0;}
+    .o17-code span{font-size:6.5px;color:var(--muted);}
+    .o17-qr svg{width:46px;height:46px;display:block;}
+    .o17-qr rect{fill:var(--text);stroke:none;}
+    .o17-qr rect.o17-f{fill:none;stroke:var(--text);stroke-width:2;}
+    .o17-foot{display:flex;justify-content:space-between;font-size:6.5px;color:var(--faint);border-top:1px solid var(--line);padding-top:5px;margin-top:9px;}
+    .o17-side{width:232px;flex:none;background:var(--card);border-radius:10px;padding:14px;}
+    .o17-sh{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+    .o17-sh b{font-size:13px;}
+    .o17-kv2{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:11px;}
+    .o17-kv2 span{color:var(--muted);}
+    .o17-kv2 b{font-weight:600;text-align:right;}
+    .o17-lock{margin:10px 0 12px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:10.5px;line-height:1.45;color:var(--muted);}`,
+  render: () => {
+    const minus = '<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>';
+    const rows = CHECKLIST.map(c => {
+      const y = c.responses.filter(r => r.ans === 'Yes').length, n = c.responses.length - y;
+      const fin = y >= n ? 'Yes' : 'No';
+      return `<tr class="${c.flagged ? 'o17-xr' : ''}"><td class="o17-m">${c.i + 1}</td><td>${c.q}</td><td class="o17-m">${c.responses.length}</td><td><b>${fin}</b>${y && n ? ` <span class="o17-m">(${Math.max(y, n)} of ${c.responses.length})</span>` : ''}</td><td class="${c.flagged ? 'o17-bad' : 'o17-ok'}">${c.flagged ? 'Exception' : 'Clear'}</td></tr>`;
+    }).join('');
+    // Stand-in QR: fixed pattern + three finder squares
+    let qr = '';
+    for (let y = 0; y < 11; y++) for (let x = 0; x < 11; x++) {
+      const finder = (x < 4 && y < 4) || (x > 6 && y < 4) || (x < 4 && y > 6);
+      if (!finder && (x * 7 + y * 11 + x * y) % 5 < 2) qr += `<rect x="${x * 4}" y="${y * 4}" width="4" height="4"/>`;
+    }
+    qr += [[0, 0], [28, 0], [0, 28]].map(([x, y]) => `<rect class="o17-f" x="${x + 1}" y="${y + 1}" width="14" height="14"/><rect x="${x + 5}" y="${y + 5}" width="6" height="6"/>`).join('');
+    const code = 'TH-0142-7F3A-92C1';
+    return H.shell({
+      overlay: `<div class="screen o17-scr">
+        <div class="o17-tb"><span class="o17-tbtn">${IC.back}Client handover</span><div class="o17-fn"><b>Handover-checklist-0142.pdf</b><span>Signed · 2 pages · 184 KB</span></div>
+          <div class="o17-mid"><span class="o17-grp"><span class="o17-ib">${IC.up}</span><b>1 / 2</b><span class="o17-ib">${IC.down}</span></span><span class="o17-grp"><span class="o17-ib">${minus}</span><b>100%</b><span class="o17-ib">${IC.plus}</span></span></div>
+          <div class="o17-right"><span class="o17-tbtn">${IC.share}Share</span><span class="o17-tbtn">${IC.print}Print</span><span class="btn primary">${IC.dl}Download PDF</span></div></div>
+        <div class="o17-body">
+          <div class="o17-thumbs"><div class="o17-mini o17-on"><i class="o17-hd"></i><i class="o17-rl"></i><i></i><i class="o17-s"></i><i></i><i></i><i></i><i></i><i class="o17-s"></i><i></i><i></i><i></i><i class="o17-s"></i></div><span class="o17-n">1</span>
+            <div class="o17-mini"><i class="o17-hd"></i><i class="o17-rl"></i><div class="o17-ph"><u></u><u></u><u></u><u></u></div><i></i><i class="o17-s"></i></div><span class="o17-n">2</span></div>
+          <div class="o17-a4 hl">
+            <div class="o17-lh"><div class="o17-logo">T<span>H</span></div><div class="o17-brand"><b>Truland Homes</b><span>Supervisor portal · Handover records</span></div>
+              <div class="o17-ref"><div class="o17-e">Handover checklist report</div><b>Booking #0142 · 12-08-2026</b></div></div>
+            <div class="o17-h1">Client handover — Lot 42 Northmead · VIC</div>
+            <div class="o17-kv"><div><span>Booking</span><b>Client handover #0142</b></div><div><span>Site</span><b>Lot 42 Northmead · VIC</b></div><div><span>Status</span><b style="color:var(--green)">Completed</b></div>
+              <div><span>Contractor</span><b>Amelia Marsh</b></div><div><span>Scheduled</span><b>12-08-2026</b></div><div><span>Completed</span><b>12-08-2026</b></div></div>
+            <div class="o17-sum"><b>Summary:</b> 10 of 10 questions answered · 17 responses from Mike T., Priya R. and Sarah K. · <b style="color:var(--red)">2 exceptions (Q2, Q5)</b></div>
+            <table class="o17-t"><thead><tr><th style="width:16px">#</th><th>Question</th><th style="width:34px">Resp.</th><th style="width:62px">Final answer</th><th style="width:48px">Result</th></tr></thead><tbody>${rows}</tbody></table>
+            <div class="o17-h2">Exceptions (2)</div>
+            <div class="o17-ex"><p><b>Q2 · Was the client present at handover?</b> Priya R. answered No (11-08-2026, 02:22 PM); Mike T. and Sarah K. answered Yes. Note from Mike T.: "Skip bin not collected, contractor booked for Tue."</p></div>
+            <div class="o17-ex"><p><b>Q5 · Were any defects found in the contractor work?</b> Mike T. and Sarah K. answered Yes; Priya R. answered No. Evidence: Permit.pdf, Insurance.pdf and 3 photos (see page 2).</p>${H.photo(0, 44, 32)}${H.photo(1, 44, 32)}</div>
+            <div class="o17-sig"><div class="o17-sig-l"><div class="o17-e">Submitted and signed by</div>
+                <svg class="o17-sg" viewBox="0 0 120 30"><path d="M3 22c6-14 11-17 13-9s-2 12 3 6 7-14 10-9-1 11 4 7 6-9 9-6 1 8 6 5 5-7 8-4M60 18c4-3 8-2 7 2s5-1 9-3 6 0 10-1M88 24c10-2 20-3 30-3"/></svg>
+                <div class="o17-line"><b>Mike T.</b> · Site supervisor · 12-08-2026, 02:40 PM</div></div>
+              <div class="o17-code"><div class="o17-e">Verification code</div><b>${code}</b><span>Verify at trulandhomes.com.au/verify</span></div>
+              <div class="o17-qr"><svg viewBox="0 0 44 44">${qr}</svg></div></div>
+            <div class="o17-foot"><span>Truland Homes · generated 12-08-2026, 02:41 PM · answers locked at submission</span><span>Page 1 of 2</span></div>
+          </div>
+          <div class="o17-side"><div class="o17-sh">${H.pill(`${IC.check}Signed`, 'green')}<b>Report details</b></div>
+            <div class="o17-kv2"><span>Signed by</span><b>Mike T.</b></div>
+            <div class="o17-kv2"><span>Signed at</span><b>12-08-2026, 02:40 PM</b></div>
+            <div class="o17-kv2"><span>Code</span><b>${code}</b></div>
+            <div class="o17-kv2"><span>Exceptions</span><b style="color:var(--red)">2 · Q2, Q5</b></div>
+            <div class="o17-kv2"><span>Pages</span><b>2 · 184 KB</b></div>
+            <div class="o17-lock">Answers are locked. Any change creates a new version with a new code.</div>
+            <div class="eyebrow-sm" style="margin-bottom:8px">Shared with</div>
+            <div class="who">${H.av('AM', 'md')}<div><div class="row-title">Amelia Marsh</div><div class="sub">Emailed 12-08-2026, 02:41 PM</div></div></div></div>
+        </div></div>`,
+    });
+  },
+},
+);
+
+</script>
+<script>
+/* ======================= Options from opts-c.js ======================= */
+/* ======================= Options 18–20 (formats) ======================= */
+OPTIONS.push(
+{
+  no: 18, cat: 'format', name: 'Internal vs client copy',
+  desc: 'The read-only checklist gets an "Internal record | Client copy" switch. Client copy shows one plain answer per question with chosen photos and no staff names or tags; "Share with client" sends it and a chip shows when it was viewed.',
+  pros: ['Client gets a clean record, not staff chatter', 'Supervisor controls the wording and photos', 'Proof the client has seen it'],
+  cons: ['Someone has to pick answers and reword them', 'Two versions to keep in sync if an answer changes'],
+  css: `.o18-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 286px;gap:14px;padding:14px 18px 16px;min-height:0;}
+    .o18-head .seg > span{padding:6px 12px;}
+    .o18-head .seg svg{width:12px;height:12px;}
+    .o18-head .seg > span.active{background:var(--text);color:var(--card);}
+    .o18-chip svg{width:12px;height:12px;}
+    .o18-paper{background:var(--card);border-radius:12px;border-top:4px solid var(--red);padding:14px 22px 12px;display:flex;flex-direction:column;min-height:0;}
+    .o18-brand{display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:12px;}
+    .o18-mark{width:26px;height:26px;border-radius:6px;background:var(--rail);color:var(--card);font-weight:800;font-size:12px;letter-spacing:-.5px;display:flex;align-items:center;justify-content:center;flex:none;}
+    .o18-mark span{color:var(--red);}
+    .o18-brand b{font-size:13px;font-weight:700;}
+    .o18-title{font-size:18px;font-weight:700;}
+    .o18-sum{display:flex;gap:8px;margin:10px 0 8px;}
+    .o18-sum svg{width:12px;height:12px;}
+    .o18-row{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);}
+    .o18-ic{width:20px;height:20px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none;}
+    .o18-ic svg{width:12px;height:12px;stroke-width:2.6;}
+    .o18-row.o18-fu .o18-ic{background:var(--amber-soft);color:var(--amber);}
+    .o18-t{font-size:12.5px;font-weight:500;line-height:20px;}
+    .o18-row.o18-fu .o18-t{font-weight:700;}
+    .o18-row .sub{margin-top:0;}
+    .o18-row .photos{margin-top:6px;}
+    .o18-foot{margin-top:auto;padding-top:9px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);display:flex;gap:6px;align-items:center;}
+    .o18-foot svg{width:12px;height:12px;color:var(--green);}
+    .o18-foot span{margin-left:auto;}
+    .o18-side{display:flex;flex-direction:column;gap:12px;min-width:0;}
+    .o18-side .card{padding:14px;}
+    .o18-side .card-head{margin-bottom:6px;}
+    .o18-hide{display:flex;gap:10px;align-items:center;padding:7px 0;}
+    .o18-hide + .o18-hide{border-top:1px solid var(--line);}
+    .o18-hide .doc-ic{width:26px;height:26px;}
+    .o18-hide b{font-size:11.5px;font-weight:600;display:block;}
+    .o18-picks{display:flex;gap:8px;margin-top:4px;}
+    .o18-pick{position:relative;display:inline-flex;}
+    .o18-pick i{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--green);color:var(--card);display:flex;align-items:center;justify-content:center;border:2px solid var(--card);}
+    .o18-pick i svg{width:9px;height:9px;stroke-width:3.2;}
+    .o18-pick.o18-off{opacity:.4;}
+    .o18-pick.o18-off i{background:var(--line-strong);}
+    .o18-log{display:flex;gap:10px;align-items:center;padding:6px 0;}
+    .o18-log + .o18-log{border-top:1px solid var(--line);}
+    .o18-log .contact-ic{flex:none;}
+    .o18-log b{font-size:11.5px;font-weight:600;display:block;}`,
+  render: () => {
+    const rows = [
+      ['ok', 'Site left clean and all rubbish removed'],
+      ['o18-fu', 'Walkthrough done with you on 12-08', 'Skip bin still on site — pickup booked for Tue 18-08'],
+      ['ok', 'Finishes match your agreed specification'],
+      ['ok', 'No delays getting onto site'],
+      ['o18-fu', 'Minor defects found — touch-ups booked for 14-08', 'Small fixes to the contractor work. We\'ll send after photos once done.', true],
+      ['ok', 'No safety incidents during the works'],
+      ['ok', 'Building permit in place'],
+      ['ok', 'Safety barriers and signage were in position'],
+      ['ok', 'Home checked and safe to hand over'],
+      ['ok', 'No damage found on site'],
+    ];
+    const hidden = [
+      [IC.user, 'Staff names and times', 'Mike T., Priya R., Sarah K.'],
+      [IC.chat, '17 responses → 10 answers', 'One agreed answer per question'],
+      [IC.flag, 'Action tags and staff notes', '9 tags · 1 note'],
+      [IC.doc, 'Internal files', 'Permit.pdf · Insurance.pdf'],
+    ];
+    return H.shell({ body: '', overlay: `<div class="screen">
+      <div class="screen-head o18-head"><span class="btn">${IC.back}Client handover</span><h2>Handover checklist</h2>
+        <div class="right hl">${H.seg([[`${IC.clip}Internal record`], [`${IC.user}Client copy`]], 1)}${H.pill(`${IC.eye}Sent to client · viewed 13-08`, 'green', 'o18-chip')}<span class="btn primary">${IC.share}Share with client</span></div></div>
+      <div class="o18-body">
+        <div class="o18-paper hl">
+          <div class="o18-brand"><span class="o18-mark">T<span>H</span></span><b>Truland Homes</b><span class="eyebrow-sm" style="margin-left:auto">Handover summary · client copy</span></div>
+          <div class="o18-title">Lot 42 Northmead · VIC</div>
+          <div class="sub">Client handover · Booking #0142 · Completed 12-08-2026</div>
+          <div class="o18-sum">${H.pill(`${IC.check}8 checks passed`, 'green')}${H.pill(`${IC.cal}2 follow-ups booked`, 'amber')}</div>
+          ${rows.map(([k, t, s, ph]) => `<div class="o18-row ${k}"><span class="o18-ic">${k === 'ok' ? IC.check : IC.clock}</span><div><div class="o18-t">${t}</div>${s ? `<div class="sub">${s}</div>` : ''}${ph ? `<div class="photos">${H.photo(0, 84, 58)}${H.photo(1, 84, 58)}</div>` : ''}</div></div>`).join('')}
+          <div class="o18-foot">${IC.check}Checked by the Truland Homes site team · 12-08-2026<span>Booking #0142</span></div>
+        </div>
+        <div class="o18-side">
+          <section class="card"><div class="card-head"><h3>${IC.eye}Left out for the client <span class="count">${hidden.length}</span></h3></div>
+            ${hidden.map(([ic, t, s]) => `<div class="o18-hide"><div class="doc-ic">${ic}</div><div><b>${t}</b><div class="sub">${s}</div></div></div>`).join('')}</section>
+          <section class="card"><div class="card-head"><h3>${IC.img}Photos shown <span class="count">2 of 3</span></h3><span class="btn">Change</span></div>
+            <div class="o18-picks">${[0, 1, 2].map(i => `<span class="o18-pick ${i === 2 ? 'o18-off' : ''}">${H.photo(i, 76, 58)}<i>${IC.check}</i></span>`).join('')}</div>
+            <div class="sub" style="margin-top:8px">From Sarah K.'s Q5 response</div></section>
+          <section class="card"><div class="card-head"><h3>${IC.share}Share log</h3></div>
+            <div class="o18-log"><div class="contact-ic">${IC.mail}</div><div><b>Emailed to client</b><div class="sub">12-08-2026, 04:10 PM</div></div></div>
+            <div class="o18-log"><div class="contact-ic">${IC.eye}</div><div><b>Opened by client</b><div class="sub">13-08-2026, 09:12 AM</div></div>${H.pill('Viewed', 'green', 'sm')}</div></section>
+        </div>
+      </div></div>` });
+  },
+},
+{
+  no: 19, cat: 'format', name: 'Client presentation mode',
+  desc: 'A full-screen, big-type view with no portal chrome, made for turning the tablet toward the client at handover. It lists the 8 checks that passed and the 2 things being followed up, each with photos or an agreed fix date.',
+  pros: ['Walks the client through handover in plain words', 'Follow-ups come with a date, not a red flag', 'Nothing internal can show on screen'],
+  cons: ['Client wording must be written for every question', 'Needs a PIN to exit so the client can\'t browse the app'],
+  css: `.o19{position:absolute;inset:0;background:var(--amber-soft);padding:22px 24px;display:flex;flex-direction:column;}
+    .o19-top{display:flex;align-items:center;gap:12px;padding:0 12px;}
+    .o19-mark{width:40px;height:40px;border-radius:10px;background:var(--rail);color:var(--card);font-weight:800;font-size:18px;letter-spacing:-1px;display:flex;align-items:center;justify-content:center;flex:none;}
+    .o19-mark span{color:var(--red);}
+    .o19-top b{font-size:16px;font-weight:800;}
+    .o19-exit{margin-left:auto;color:var(--muted);background:transparent;border-color:var(--line-strong);font-size:10.5px;padding:5px 9px;}
+    .o19-exit svg{width:12px;height:12px;}
+    .o19-body{margin-top:8px;padding:12px;display:flex;flex-direction:column;}
+    .o19-hero h1{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.1;}
+    .o19-hero p{font-size:15px;color:var(--muted);margin-top:6px;}
+    .o19-bar{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:14px;}
+    .o19-bar i{height:10px;border-radius:5px;background:var(--green);}
+    .o19-bar i.o19-a{background:var(--amber);}
+    .o19-bar-l{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-top:6px;color:var(--green);}
+    .o19-bar-l span + span{color:var(--amber);}
+    .o19-cols{display:grid;grid-template-columns:1.05fr 1fr;gap:18px;margin-top:16px;align-items:start;}
+    .o19-col{display:flex;flex-direction:column;gap:10px;min-width:0;}
+    .o19-card{background:var(--card);border-radius:16px;padding:16px 22px 8px;}
+    .o19 h2{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px;}
+    .o19 h2 .count{font-size:12px;padding:2px 8px;}
+    .o19-ticks{list-style:none;margin-top:6px;}
+    .o19-ticks li{display:flex;align-items:center;gap:12px;font-size:16px;font-weight:500;padding:8px 0;border-top:1px solid var(--line);}
+    .o19-ticks li:first-child{border-top:none;}
+    .o19-tk{width:26px;height:26px;border-radius:50%;background:var(--green);color:var(--card);display:flex;align-items:center;justify-content:center;flex:none;}
+    .o19-tk svg{width:15px;height:15px;stroke-width:3;}
+    .o19-fu{background:var(--card);border-radius:16px;padding:14px 18px;border-left:5px solid var(--amber);}
+    .o19-fu > b{font-size:17px;font-weight:700;display:block;}
+    .o19-fu p{font-size:14px;color:var(--muted);line-height:1.45;margin-top:4px;}
+    .o19-fu .photos{margin-top:10px;}
+    .o19-date{display:flex;align-items:center;gap:8px;margin-top:10px;background:var(--amber-soft);color:var(--amber);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;}
+    .o19-date b{margin-left:auto;color:var(--text);font-size:15px;font-weight:700;}
+    .o19-date svg{width:18px;height:18px;}
+    .o19-contact{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:12px 18px;}
+    .o19-contact b{font-size:14px;font-weight:700;}
+    .o19-contact .sub{font-size:12px;}
+    .o19-contact .o19-ph{margin-left:auto;font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;}
+    .o19-contact .o19-ph svg{width:16px;height:16px;color:var(--red);}`,
+  render: () => {
+    const ok = ['Site left clean, all rubbish removed', 'Finishes match your agreed specification', 'No delays getting onto site', 'No safety incidents during the works', 'Building permit in place', 'Safety barriers and signage in position', 'Your home is safe to hand over', 'No damage found on site'];
+    const lock = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+    return `<div class="o19">
+      <div class="o19-top"><span class="o19-mark">T<span>H</span></span><div><b>Truland Homes</b><div class="sub">Client handover · Wednesday 12 August 2026</div></div>
+        <span class="btn o19-exit">${lock}Exit presentation</span></div>
+      <div class="o19-body hl">
+        <div class="o19-hero"><h1>Lot 42 Northmead — your handover</h1><p>We checked 10 things before handing over your home. Here's how it went.</p>
+          <div class="o19-bar">${Array.from({ length: 10 }, (_, i) => `<i class="${i >= 8 ? 'o19-a' : ''}"></i>`).join('')}</div>
+          <div class="o19-bar-l"><span>8 all good</span><span>2 we're following up</span></div></div>
+        <div class="o19-cols">
+          <div class="o19-col">
+            <section class="o19-card"><h2><span class="o19-tk">${IC.check}</span>All good <span class="count">8 checks</span></h2>
+              <ul class="o19-ticks">${ok.map(t => `<li><span class="o19-tk">${IC.check}</span>${t}</li>`).join('')}</ul></section>
+            <div class="o19-contact">${H.av('AM', 'md')}<div><b>Amelia Marsh</b><div class="sub">Your site contact · questions any time</div></div><span class="o19-ph">${IC.phone}0412 345 678</span></div>
+          </div>
+          <div class="o19-col">
+            <h2 style="padding:4px 0 0">We're following up <span class="count">2</span></h2>
+            <div class="o19-fu"><b>A few small touch-ups</b><p>We found minor defects in the finishing work. Our team will fix them and check again.</p>
+              <div class="photos">${H.photo(0, 118, 80)}${H.photo(1, 118, 80)}</div>
+              <div class="o19-date">${IC.cal}Fix booked<b>Fri 14 August</b></div></div>
+            <div class="o19-fu"><b>Skip bin pickup</b><p>The skip bin wasn't collected on time. It's booked to be taken away.</p>
+              <div class="o19-date">${IC.cal}Pickup booked<b>Tue 18 August</b></div></div>
+          </div>
+        </div>
+      </div></div>`;
+  },
+},
+{
+  no: 20, cat: 'format', name: 'Version history & compare',
+  desc: 'When a checklist is re-opened and re-submitted, a version chip picks v1 or v2 and a Compare switch lays them side by side. Only changed answers open up, old against new, under a banner with the re-open reason.',
+  pros: ['Shows exactly what changed and why', 'Old answers and files are never lost', 'Clear audit trail for re-inspections'],
+  cons: ['Two columns get cramped with photos', 'Only matters for re-opened checklists'],
+  css: `.o20-ctrls{display:flex;align-items:center;gap:8px;margin-left:6px;}
+    .o20-ctrls svg{width:13px;height:13px;}
+    .o20-cmp{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;border:1px solid var(--line-strong);border-radius:7px;padding:4px 5px 4px 10px;background:var(--card);}
+    .o20-sw{width:30px;height:18px;border-radius:9px;background:var(--green);position:relative;display:block;}
+    .o20-sw::after{content:"";position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:var(--card);}
+    .o20-body{flex:1;padding:14px 20px;display:flex;flex-direction:column;gap:10px;min-height:0;}
+    .o20-banner{display:flex;align-items:center;gap:12px;background:var(--blue-soft);border-radius:10px;padding:10px 14px;}
+    .o20-banner .flag-ic{background:var(--card);color:var(--blue);}
+    .o20-banner b{font-size:12.5px;font-weight:700;}
+    .o20-banner q{font-size:12.5px;font-weight:600;color:var(--blue);}
+    .o20-banner .btn{margin-left:auto;}
+    .o20-grid{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);}
+    .o20-colhead{padding:0 13px 8px 15px;align-items:center;}
+    .o20-vh{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;}
+    .o20-vh.o20-cur{border-color:var(--text);}
+    .o20-v{font-size:11px;font-weight:800;border-radius:5px;padding:3px 7px;background:var(--soft);color:var(--muted);}
+    .o20-vh.o20-cur .o20-v{background:var(--text);color:var(--card);}
+    .o20-vh b{font-size:12px;font-weight:600;}
+    .o20-vh .sub{margin-top:1px;}
+    .o20-vh .pill{margin-left:auto;}
+    .o20-q{border-left:3px solid var(--amber);}
+    .o20-q .q-num{background:var(--amber-soft);color:var(--amber);}
+    .o20-cells{border-top:1px solid var(--line);padding:10px 12px 12px;align-items:stretch;}
+    .o20-cell{border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;min-width:0;}
+    .o20-old{background:var(--red-soft);}
+    .o20-new{background:var(--green-soft);}
+    .o20-arrow{display:flex;align-items:center;justify-content:center;color:var(--muted);}
+    .o20-arrow svg{width:18px;height:18px;}
+    .o20-ans{display:flex;align-items:center;gap:8px;}
+    .o20-ans .pill{font-size:12px;padding:3px 9px;}
+    .o20-ans .sub{margin:0 0 0 auto;}
+    .o20-by{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);}
+    .o20-by b{color:var(--text);font-weight:600;font-size:11.5px;}
+    .o20-cell .files,.o20-cell .photos,.o20-cell .tags,.o20-cell .resp-note{margin-top:0;}
+    .o20-cell .resp-note{background:var(--card);}
+    .o20-cell .file{padding:6px 8px;}
+    .o20-cell .tag{background:var(--card);}
+    .o20-more{display:flex;align-items:center;gap:12px;background:var(--card);border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:600;}
+    .o20-more .sub{margin:0;font-weight:500;}
+    .o20-more .btn{margin-left:auto;}
+    .o20-more .fp i{background:var(--line-strong);}
+    .o20-more .fp i.o20-a{background:var(--amber);}
+    .o20-head .seg span.count{padding:1px 6px;border-radius:4px;}
+    .o20-tl{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:8px;padding:10px 14px;}
+    .o20-st{display:flex;align-items:center;gap:8px;flex:none;}
+    .o20-st b{font-size:11.5px;font-weight:600;display:block;}
+    .o20-st .sub{margin-top:1px;}
+    .o20-st.o20-now b::after{content:" · current";color:var(--green);}
+    .o20-line{flex:1;height:2px;background:var(--line);min-width:16px;}`,
+  render: () => {
+    const c = CHECKLIST[4];
+    const [mt, pr, sk] = c.responses;
+    const by = (r, extra = '') => `<div class="o20-by">${H.av(r.by)}<b>${PEOPLE[r.by]}</b>${extra}<span>${r.time}</span></div>`;
+    return H.shell({ body: '', overlay: `<div class="screen">
+      <div class="screen-head o20-head"><span class="btn">${IC.back}Client handover</span><h2>Handover checklist</h2>${H.pill('Completed', 'completed')}
+        <div class="o20-ctrls hl"><span class="btn">${IC.history}v2 · 14-08-2026 ${IC.down}</span><span class="o20-cmp">Compare with v1<i class="o20-sw"></i></span></div>
+        <div class="right">${H.seg([['Changed', 1], ['All', 10]])}</div></div>
+      <div class="o20-body">
+        <div class="o20-banner"><div class="flag-ic">${IC.history}</div><div><b>Re-opened by John D.:</b> <q>Defects fixed, re-inspect</q>
+          <div class="sub">14-08-2026, 09:05 AM · re-submitted by Mike T. at 11:30 AM · 1 answer changed, 1 flag cleared</div></div><span class="btn">View v1 only</span></div>
+        <div class="hl">
+          <div class="o20-grid o20-colhead">
+            <div class="o20-vh"><span class="o20-v">v1</span><div><b>Submitted 12-08-2026, 02:40 PM</b><div class="sub">Mike T. · 10/10 answered · 2 flagged</div></div></div><div></div>
+            <div class="o20-vh o20-cur"><span class="o20-v">v2</span><div><b>Re-submitted 14-08-2026, 11:30 AM</b><div class="sub">Mike T. · 10/10 answered · 1 flagged</div></div>${H.pill('Current', 'green', 'sm')}</div>
+          </div>
+          <div class="q o20-q"><div class="q-head"><span class="q-num">${c.i + 1}</span><span class="q-text">${c.q}</span>
+            <span class="q-tail">${H.pill('Changed', 'amber')}${H.pill(`${IC.check}Flag cleared`, 'green')}${IC.up}</span></div>
+            <div class="o20-grid o20-cells">
+              <div class="o20-cell o20-old">
+                <div class="o20-ans">${H.pill('Yes – defects', 'red')}<span class="sub">2 of 3 said Yes</span></div>
+                ${by(mt)}
+                <div class="files">${mt.files.map(([n, s]) => `<div class="file">${IC.pdf}<div><div class="file-name">${n}</div><div class="sub" style="margin-top:0">${s}</div></div></div>`).join('')}</div>
+                ${by(sk)}
+                <div class="photos">${Array.from({ length: sk.photos }, (_, i) => H.photo(i, 56, 42)).join('')}</div>
+                ${by(pr, ` said ${pr.ans} ·`)}
+              </div>
+              <div class="o20-arrow">${IC.right}</div>
+              <div class="o20-cell o20-new">
+                <div class="o20-ans">${H.pill('No – fixed, photos attached', 'green')}<span class="sub">1 new response</span></div>
+                ${by({ by: 'MT', time: '14-08-2026, 11:20 AM' })}
+                <div class="resp-note"><b>Note:</b> All 3 touch-ups done by Amelia Marsh's crew and re-inspected on site.</div>
+                <div class="photos">${[3, 2, 1].map(i => H.photo(i, 56, 42)).join('')}</div>
+                <div class="tags"><span class="tag">Photos uploaded</span><span class="tag">Status updated</span></div>
+                <div class="sub" style="margin:0">Permit.pdf and Insurance.pdf kept from v1</div>
+              </div>
+            </div></div>
+        </div>
+        <div class="q flagged"><div class="q-head"><span class="q-num">2</span><span class="q-text">${CHECKLIST[1].q}</span><span class="sub" style="margin:0">Same in v1 and v2 · 2 Yes, 1 No</span>
+          <span class="q-tail">${H.pill('Unchanged', 'grey')}${H.pill('Flagged', 'flag')}<span class="count">3</span>${IC.down}</span></div></div>
+        <div class="o20-more"><span class="fp">${CHECKLIST.map(q => `<i class="${q.i === 4 ? 'o20-a' : ''}"></i>`).join('')}</span>8 more questions unchanged<span class="sub">Q1, Q3–Q4, Q6–Q10</span><span class="btn">Show unchanged ${IC.down}</span></div>
+        <div class="o20-tl"><span class="eyebrow-sm">History</span>
+          <span class="o20-st">${H.av('MT')}<div><b>v1 submitted</b><div class="sub">Mike T. · 12-08-2026, 02:40 PM</div></div></span><span class="o20-line"></span>
+          <span class="o20-st">${H.av('JD')}<div><b>Re-opened</b><div class="sub">John D. · 14-08-2026, 09:05 AM</div></div></span><span class="o20-line"></span>
+          <span class="o20-st o20-now">${H.av('MT')}<div><b>v2 submitted</b><div class="sub">Mike T. · 14-08-2026, 11:30 AM</div></div></span></div>
+      </div></div>` });
+  },
+},
+);
+
+</script>
+<script>
+/* ======================= Options from opts-d.js ======================= */
+/* ======================= Options 21–26 · Elsewhere in the app ======================= */
+OPTIONS.push(
+{
+  no: 21, cat: 'elsewhere', name: 'Bell notification preview',
+  desc: 'The bell shows 4 new. The top notification is Mike\'s checklist submission with both flagged questions and the defect photos previewed inline, plus "View checklist" and "Go to booking".',
+  pros: ['Reaches the supervisor on any screen', 'Enough detail to judge urgency without opening anything', 'One tap to the answers or the booking'],
+  cons: ['Easy to miss once notifications pile up', 'The preview is gone once it is read'],
+  css: `.o21-dayh{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .o21-dayh b{font-size:15px;font-weight:700;}
+    .o21-pop{top:54px;right:10px;width:340px;}
+    .o21-head{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);}
+    .o21-head b{font-size:13px;}
+    .o21-link{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--blue);}
+    .o21-top{margin:10px;padding:12px;border:1px solid var(--line);border-left:3px solid var(--red);border-radius:10px;background:#fff;}
+    .o21-top-h{display:flex;gap:10px;align-items:flex-start;}
+    .o21-txt{font-size:12px;line-height:1.4;}
+    .o21-txt b{font-weight:700;}
+    .o21-fl{display:flex;flex-direction:column;gap:6px;margin:10px 0;}
+    .o21-fl .row{padding:7px 8px;gap:8px;align-items:flex-start;}
+    .o21-fl .flag-ic{width:22px;height:22px;}
+    .o21-fl .flag-ic svg{width:12px;height:12px;}
+    .o21-fl .row-title{font-size:11px;line-height:1.35;}
+    .o21-thumbs{display:flex;gap:4px;margin-top:6px;}
+    .o21-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .o21-acts .btn{justify-content:center;padding:7px 10px;}
+    .o21-item{display:flex;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:flex-start;}
+    .o21-item .doc-ic{width:28px;height:28px;}
+    .o21-item .o21-txt{font-size:11.5px;flex:1;min-width:0;}
+    .o21-item .dot{margin-top:5px;}
+    .o21-sec{padding:8px 14px 2px;border-top:1px solid var(--line);}
+    .o21-sec + .o21-item{border-top:none;}
+    .o21-foot{border-top:1px solid var(--line);padding:10px;text-align:center;font-size:11px;font-weight:600;color:var(--blue);}`,
+  render: () => {
+    const older = (icon, tone, html, sub, unread) => `<div class="o21-item"><div class="doc-ic" style="${tone}">${icon}</div>
+      <div class="o21-txt">${html}<div class="sub">${sub}</div></div>${unread ? '<span class="dot"></span>' : ''}</div>`;
+    const green = 'background:var(--green-soft);color:var(--green)';
+    return H.shell({
+      rail: 'sched', title: 'Schedules', bellBadge: 4,
+      body: `<div class="o21-dayh"><b>Wednesday 12 Aug</b><span class="sub" style="margin:0">6 bookings · 3 completed</span></div>
+        <div class="list">
+          ${H.bookingRow({ code: '#0142' })}
+          ${H.bookingRow({ time: '10:00 AM', code: '#0144', title: 'Final clean', lot: 'Lot 17 Skyview Terrace' })}
+          ${H.bookingRow({ time: '11:30 AM', code: '#0145', title: 'Roof inspection', lot: 'Lot 9 Riverbend Rd', status: H.pill('In progress', 'amber') })}
+          ${H.bookingRow({ time: '1:00 PM', code: '#0140', title: 'Fencing install', lot: 'Lot 42 Northmead Dr' })}
+          ${H.bookingRow({ time: '3:30 PM', code: '#0146', title: 'Plumbing rough-in', lot: 'Lot 5 Ashgrove Ct', status: H.pill('Booked', 'green') })}
+          ${H.bookingRow({ time: '4:30 PM', code: '#0148', title: 'Site clean-up', lot: 'Lot 3 Harbour View', status: H.pill('Booked', 'green') })}
+        </div>
+        <div class="o21-dayh" style="margin-top:16px"><b>Thursday 13 Aug</b><span class="sub" style="margin:0">1 booking</span></div>
+        <div class="list">${H.bookingRow({ time: '9:00 AM', code: '#0147', title: 'Utilities connection', lot: 'Lot 42 Northmead Dr', status: H.pill('Booked', 'green') })}</div>`,
+      overlay: `<div class="pop o21-pop"><span class="pop-caret" style="right:16px"></span>
+        <div class="o21-head"><b>Notifications</b><span class="count">4 new</span><span class="o21-link">Mark all read</span></div>
+        <div class="o21-top hl">
+          <div class="o21-top-h">${H.av('MT', 'md')}<div style="flex:1;min-width:0"><div class="o21-txt"><b>Mike T.</b> submitted the handover checklist · Lot 42 · <b style="color:var(--red)">2 flagged</b></div>
+            <div class="sub">Client handover #0142 · 12-08-2026, 02:40 PM</div></div><span class="dot" style="margin-top:5px"></span></div>
+          <div class="o21-fl">
+            <div class="row"><div class="flag-ic">${IC.flag}</div><div><div class="row-title">Q2. ${CHECKLIST[1].q}</div><div class="sub">Priya R. said "No" · staff notified</div></div></div>
+            <div class="row"><div class="flag-ic">${IC.flag}</div><div><div class="row-title">Q5. ${CHECKLIST[4].q}</div><div class="sub">Mike T., Sarah K. said "Yes" · 2 PDFs · 3 photos</div>
+              <div class="o21-thumbs">${[0, 1, 2].map(i => H.photo(i, 38, 28)).join('')}</div></div></div>
+          </div>
+          <div class="o21-acts"><span class="btn dark">${IC.clip}View checklist</span><span class="btn">Go to booking ${IC.right}</span></div>
+        </div>
+        ${older(IC.calCheck, green, '<b>Fencing install</b> marked Completed · Lot 42', '#0140 · Jake L. · 01:55 PM', true)}
+        ${older(IC.doc, '', '<b>Amelia Marsh</b> uploaded handover-signoff.pdf', 'Client handover · Lot 42 · 01:20 PM', true)}
+        ${older(IC.clip, green, '<b>Final clean</b> checklist submitted · all clear', 'Sarah K. · Lot 17 Skyview Terrace · 10:40 AM', true)}
+        <div class="o21-sec eyebrow-sm">Earlier</div>
+        ${older(IC.cal, '', '<b>Utilities connection</b> booked for 13-08', '#0147 · Lot 42 Northmead Dr · Yesterday', false)}
+        <div class="o21-foot">See all notifications</div>
+      </div>`,
+    });
+  },
+},
+{
+  no: 22, cat: 'elsewhere', name: 'Dashboard follow-ups card',
+  desc: 'The dashboard gets a "Checklist follow-ups" card listing every flagged answer from the last 7 days across all lots, each with an owner and a due date. "Open" jumps to the answer; "Mark followed up" clears it from the list.',
+  pros: ['Turns flags into a to-do list with owners', 'Every lot in one place', 'Overdue items stand out'],
+  cons: ['Someone has to own and close each flag', 'Pushes today\'s bookings further down'],
+  css: `.o22-greet{display:flex;align-items:flex-end;gap:10px;margin-bottom:14px;}
+    .o22-hi{font-size:20px;font-weight:800;}
+    .o22-greet .btn{margin-left:auto;}
+    .o22-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+    .o22-tile{background:var(--card);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;}
+    .o22-tile b{display:block;font-size:20px;font-weight:800;line-height:1.1;}
+    .o22-tile .sub{margin-top:1px;}
+    .o22-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--soft);color:var(--muted);flex:none;}
+    .o22-ic svg{width:16px;height:16px;}
+    .o22-card{margin-bottom:14px;}
+    .o22-card .card-head{margin-bottom:10px;}
+    .o22-card .card-head .seg{margin-left:auto;}
+    .o22-card .card-head .btn{margin-left:0;}
+    .o22-rows{display:flex;flex-direction:column;gap:8px;}
+    .o22-row{gap:12px;padding:9px 10px;}
+    .o22-row > .btn{margin-left:0;}
+    .o22-main{flex:1;min-width:0;}
+    .o22-main .row-title{display:flex;align-items:center;gap:6px;}
+    .o22-main .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .o22-owner{display:flex;align-items:center;gap:8px;width:120px;flex:none;}
+    .o22-owner b{display:block;font-size:11.5px;font-weight:600;}
+    .o22-owner .sub{margin-top:0;}
+    .o22-due{width:104px;flex:none;}
+    .o22-bk{display:grid;grid-template-columns:1fr 1fr;gap:10px;}`,
+  render: () => {
+    const tile = (icon, tone, n, label, sub, cls = '') => `<div class="o22-tile ${cls}"><div class="o22-ic" style="${tone}">${icon}</div><div><b>${n}</b><div class="sub" style="color:var(--text);font-weight:600">${label}</div><div class="sub">${sub}</div></div></div>`;
+    const fu = [
+      { lot: 'Lot 42', q: 5, t: 'Defects found in contractor work', sub: 'Client handover · Mike T., Sarah K. said "Yes" · 2 PDFs, 3 photos', by: 'AM', owner: 'Amelia Marsh', role: 'Contractor', due: H.pill('Due 14-08', 'amber') },
+      { lot: 'Lot 42', q: 2, t: 'Client not present at handover', sub: 'Client handover · Priya R. said "No" · staff notified', by: 'MT', owner: 'Mike T.', role: 'Supervisor', due: H.pill('Due 13-08', 'amber') },
+      { lot: 'Lot 17', q: 8, t: 'Safety signage missing', sub: 'Scaffold removal · Sarah K. said "No" · 1 photo', by: 'SK', owner: 'Sarah K.', role: 'Site lead', due: H.pill('Overdue · 11-08', 'red') },
+    ];
+    return H.shell({
+      rail: 'dash', title: 'Dashboard', bellBadge: 4,
+      body: `<div class="o22-greet"><div><div class="o22-hi">Good afternoon</div><div class="sub">Wednesday 12 August 2026 · 6 bookings today across 4 lots</div></div><span class="btn">${IC.cal}Open schedule</span></div>
+        <div class="o22-tiles">
+          ${tile(IC.cal, '', 6, 'Today\'s bookings', '3 done · 1 in progress')}
+          ${tile(IC.clock, 'background:var(--amber-soft);color:var(--amber)', 1, 'Needs approval', 'Site clean-up · Lot 3')}
+          ${tile(IC.doc, '', 1, 'Missing documents', 'Plumbing rough-in · Lot 5')}
+          ${tile(IC.flag, 'background:var(--red-soft);color:var(--red)', 3, 'Open follow-ups', '1 overdue', 'hl')}
+        </div>
+        <section class="card o22-card hl"><div class="card-head"><h3><span style="color:var(--red);display:inline-flex">${IC.flag}</span>Checklist follow-ups <span class="count">3</span><span class="sub" style="margin:0;font-weight:500">· last 7 days</span></h3>
+          ${H.seg([['Open', 3], ['Followed up', 5]])}<span class="btn">View all</span></div>
+          <div class="o22-rows">${fu.map(f => `<div class="row o22-row"><div class="flag-ic">${IC.flag}</div>
+            <div class="o22-main"><div class="row-title"><span class="code">${f.lot}</span>Q${f.q} · ${f.t}</div><div class="sub">${f.sub}</div></div>
+            <div class="o22-owner">${H.av(f.by)}<div><b>${f.owner}</b><div class="sub">${f.role}</div></div></div>
+            <div class="o22-due">${f.due}</div>
+            <span class="btn">Open</span><span class="btn dark">${IC.check}Mark followed up</span></div>`).join('')}</div>
+        </section>
+        <section class="card"><div class="card-head"><h3>${IC.cal}Today's bookings <span class="count">6</span></h3><span class="btn">View schedule</span></div>
+          <div class="o22-bk">
+            ${H.bookingRow({ code: '#0142' })}
+            ${H.bookingRow({ time: '10:00 AM', code: '#0144', title: 'Final clean', lot: 'Lot 17 Skyview Terrace' })}
+            ${H.bookingRow({ time: '11:30 AM', code: '#0145', title: 'Roof inspection', lot: 'Lot 9 Riverbend Rd', status: H.pill('In progress', 'amber') })}
+            ${H.bookingRow({ time: '1:00 PM', code: '#0140', title: 'Fencing install', lot: 'Lot 42 Northmead Dr' })}
+            ${H.bookingRow({ time: '3:30 PM', code: '#0146', title: 'Plumbing rough-in', lot: 'Lot 5 Ashgrove Ct', status: H.pill('Booked', 'green') })}
+            ${H.bookingRow({ time: '4:30 PM', code: '#0148', title: 'Site clean-up', lot: 'Lot 3 Harbour View', status: H.pill('Booked', 'green') })}
+          </div></section>`,
+    });
+  },
+},
+{
+  no: 23, cat: 'elsewhere', name: 'Checklists section in rail',
+  desc: 'A new Checklists icon in the rail lists every submitted checklist, with search, filters and a colour strip per checklist. Tapping one shows it read-only on the right, with a jump to its booking.',
+  pros: ['Find any checklist without knowing the booking', '"Flagged" filter is a ready-made triage list', 'Colour strip shows each result at a glance'],
+  cons: ['A whole new section to learn and maintain', 'Repeats what the booking page already shows'],
+  css: `.o23-wrap{display:grid;grid-template-columns:330px minmax(0,1fr);gap:14px;height:642px;}
+    .o23-list{display:flex;flex-direction:column;gap:10px;padding:14px;overflow:hidden;}
+    .o23-lh{display:flex;align-items:center;gap:8px;}
+    .o23-lh b{font-size:14px;font-weight:700;}
+    .o23-search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px 10px;font-size:11.5px;color:var(--faint);}
+    .o23-chips{display:flex;gap:6px;}
+    .o23-chips span{border:1px solid var(--line-strong);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px;}
+    .o23-chips span.o23-on{background:var(--text);border-color:var(--text);color:#fff;}
+    .o23-chips i{font-style:normal;opacity:.7;}
+    .o23-chips svg{width:12px;height:12px;color:var(--red);}
+    .o23-rows{display:flex;flex-direction:column;gap:6px;}
+    .o23-row{border:1px solid var(--line);border-radius:8px;padding:9px 10px;display:flex;flex-direction:column;gap:5px;}
+    .o23-row.o23-sel{border-color:var(--text);background:var(--soft);box-shadow:inset 3px 0 0 var(--red);}
+    .o23-r1{display:flex;align-items:center;gap:6px;}
+    .o23-r1 b{font-size:12px;font-weight:600;}
+    .o23-r1 time{margin-left:auto;font-size:10.5px;color:var(--muted);}
+    .o23-row .sub{margin-top:0;}
+    .o23-r3{display:flex;align-items:center;gap:8px;}
+    .o23-r3 .pill{margin-left:auto;}
+    .o23-detail{display:flex;flex-direction:column;gap:10px;min-width:0;overflow:hidden;}
+    .o23-dh .title{margin:8px 0 6px;}
+    .o23-dh .meta{margin-bottom:12px;}
+    .o23-stats{display:flex;align-items:center;gap:8px;}
+    .o23-stats .fp{margin-left:auto;}
+    .o23-bar{display:flex;align-items:center;gap:10px;}
+`,
+  render: () => {
+    const fp = s => `<span class="fp">${[...s].map(ch => `<i class="${ch === 'x' ? 'r' : ''}"></i>`).join('')}</span>`;
+    const rows = [
+      { lot: 'Lot 42 Northmead Dr', sub: 'Client handover · #0142 · Mike T.', date: '12-08', fp: H.fingerprint(), pill: H.pill('2 flagged', 'flag', 'sm'), sel: true, unread: true },
+      { lot: 'Lot 17 Skyview Terrace', sub: 'Final clean · #0144 · Sarah K.', date: '12-08', fp: fp('........'), pill: H.pill('Clear', 'green', 'sm') },
+      { lot: 'Lot 42 Northmead Dr', sub: 'Fencing install · #0140 · Mike T.', date: '12-08', fp: fp('........'), pill: H.pill('Clear', 'green', 'sm') },
+      { lot: 'Lot 9 Riverbend Rd', sub: 'Site inspection · #0137 · Priya R.', date: '11-08', fp: fp('...x......'), pill: H.pill('1 flagged', 'flag', 'sm') },
+      { lot: 'Lot 17 Skyview Terrace', sub: 'Scaffold removal · #0131 · Sarah K.', date: '09-08', fp: fp('.......x.'), pill: H.pill('1 flagged', 'flag', 'sm') },
+      { lot: 'Lot 3 Harbour View', sub: 'Landscaping sign-off · #0128 · Priya R.', date: '07-08', fp: fp('......'), pill: H.pill('Clear', 'green', 'sm') },
+    ];
+    return H.shell({
+      rail: 'check', railOpts: { checklists: true, badge: '1' }, title: 'Checklists',
+      body: `<div class="o23-wrap">
+        <section class="card o23-list hl">
+          <div class="o23-lh"><b>Submitted checklists</b><span class="count">24</span></div>
+          <div class="o23-search">${IC.search}Search lot, booking or person</div>
+          <div class="o23-chips"><span class="o23-on">All <i>24</i></span><span>${IC.flag}Flagged <i>3</i></span><span>This week <i>4</i></span></div>
+          <div class="o23-rows">${rows.map(r => `<div class="o23-row ${r.sel ? 'o23-sel' : ''}">
+            <div class="o23-r1"><b>${r.lot}</b>${r.unread ? '<span class="dot"></span>' : ''}<time>${r.date}</time></div>
+            <div class="sub">${r.sub}</div>
+            <div class="o23-r3">${r.fp}${r.pill}</div></div>`).join('')}</div>
+        </section>
+        <section class="o23-detail">
+          <div class="card o23-dh">
+            <div style="display:flex;align-items:center;gap:8px"><span class="eyebrow-sm">Handover checklist · read only</span><div style="margin-left:auto;display:flex;gap:8px"><span class="btn">${IC.share}Share</span><span class="btn dark">Open booking ${IC.right}</span></div></div>
+            <h1 class="title">Client handover · Lot 42 Northmead · VIC</h1>
+            <div class="meta"><span class="code">#0142</span><span class="sep"></span><span>Submitted by <b style="color:var(--text)">Mike T.</b> · 12-08-2026, 02:40 PM</span><span class="sep"></span><span>Contractor Amelia Marsh</span></div>
+            <div class="o23-stats">${H.pill('Completed', 'completed')}${H.pill('10/10 answered', 'green')}${H.pill('2 flagged', 'flag')}<span class="sub" style="margin:0">17 responses · 3 people</span>${H.fingerprint()}</div>
+          </div>
+          <div class="o23-bar">${H.seg([['All', 10], ['Flagged', 2]], 1)}<span class="sub" style="margin:0">Showing 2 flagged · 8 more answered as expected</span><span class="btn" style="margin-left:auto">Show all ${IC.down}</span></div>
+          <div class="cl-list">${H.q(CHECKLIST[1])}${H.q(CHECKLIST[4], { open: true })}</div>
+        </section>
+      </div>`,
+    }).replace('rail-btn active', 'rail-btn active hl');
+  },
+},
+{
+  no: 24, cat: 'elsewhere', name: 'Lot bookings with checklist column',
+  desc: 'On the Lot page, the bookings table gets a Checklist column: "10/10 · 2 flagged", "8/8 clear" or "Not started". Tapping the handover row opens the side panel on its Checklist tab.',
+  pros: ['The whole lot\'s history in one table', 'Same side panel as the web portal', 'Problem jobs stand out in the column'],
+  cons: ['Table gets tight while the panel is open', 'Only helps people who start from the Lot page'],
+  css: `.o24-main{padding:14px 14px 16px;}
+    .o24-lot{padding:14px 16px 0;margin-bottom:12px;}
+    .o24-lot-top{display:flex;align-items:center;gap:10px;}
+    .o24-lot-top .pill{margin-left:auto;}
+    .o24-lot-ic{width:36px;height:36px;border-radius:8px;background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;flex:none;}
+    .o24-lot-ic svg{width:18px;height:18px;}
+    .o24-lot-name{font-size:15px;font-weight:700;}
+    .o24-lt{display:flex;gap:18px;margin-top:12px;}
+    .o24-lt > span{padding:0 0 10px;font-size:11.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;display:inline-flex;gap:6px;align-items:center;}
+    .o24-lt > span.o24-on{color:var(--text);border-bottom-color:var(--red);}
+    .o24-tc{padding:0;overflow:hidden;}
+    .o24-t{width:100%;border-collapse:collapse;font-size:11px;}
+    .o24-t th{text-align:left;font-size:10px;font-weight:600;color:var(--muted);padding:9px 5px;background:var(--soft);border-bottom:1px solid var(--line);white-space:nowrap;}
+    .o24-t td{padding:8px 5px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle;}
+    .o24-t tr:last-child td{border-bottom:none;}
+    .o24-t th:first-child,.o24-t td:first-child{padding-left:12px;}
+    .o24-t th:last-child,.o24-t td:last-child{padding-right:10px;}
+    .o24-t tr.o24-sel td{background:var(--blue-soft);}
+    .o24-t tr.o24-sel td:first-child{box-shadow:inset 3px 0 0 var(--blue);}
+    .o24-bn{font-weight:600;font-size:11.5px;}
+    .o24-bc{font-size:10px;color:var(--muted);}
+    .o24-dim{color:var(--faint);}
+    .o24-who{display:flex;align-items:center;gap:5px;}
+    .o24-who .avatar{width:20px;height:20px;font-size:8px;}
+    .o24-av-b{background:var(--blue);}
+    .o24-av-a{background:var(--amber);}
+    .o24-av-g{background:var(--green);}
+    .o24-chip{display:inline-flex;align-items:center;gap:4px;border-radius:5px;padding:3px 7px;font-size:10px;font-weight:700;border:1px solid transparent;}
+    .o24-chip.o24-r{color:var(--red);background:var(--red-soft);}
+    .o24-chip.o24-g{color:var(--green);background:var(--green-soft);}
+    .o24-chip.o24-n{color:var(--muted);border:1px dashed var(--line-strong);}
+    .o24-panel{width:340px;flex:none;background:var(--card);border-left:1px solid var(--line);box-shadow:0 18px 40px -12px rgba(15,17,25,.35);padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;}
+    .o24-ph{display:flex;align-items:center;gap:8px;}
+    .o24-ph .x{margin-left:auto;width:28px;height:28px;}
+    .o24-pt{display:flex;align-items:flex-start;gap:10px;}
+    .o24-pt .btn{margin-left:auto;}
+    .o24-pt-name{font-size:16px;font-weight:700;}
+    .o24-panel .tabs{margin-bottom:0;}
+    .o24-body{display:flex;flex-direction:column;gap:8px;}
+    .o24-sum{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:9px 10px;}
+    .o24-sum-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+    .o24-sum-top .fp{margin-left:auto;}
+    .o24-sum .sub{margin-top:0;}
+    .o24-body .seg{display:grid;grid-auto-columns:1fr;}
+    .o24-more{display:flex;align-items:center;gap:8px;justify-content:center;border:1px dashed var(--line-strong);border-radius:8px;padding:9px;font-size:11px;font-weight:600;color:var(--muted);}`,
+  render: () => {
+    const chip = (kind, text) => `<span class="o24-chip o24-${kind}">${text}</span>`;
+    const who = (ini, name, cls = '') => `<div class="o24-who"><div class="avatar ${cls}">${ini}</div>${name}</div>`;
+    const rows = [
+      { n: 'Frame inspection', c: '#0112', cat: 'Inspection', s: '18-06', d: '18-06', w: who('JL', 'Jake L.', 'o24-av-a'), st: H.pill('Completed', 'green', 'sm'), cl: chip('g', '12/12 clear') },
+      { n: 'Lock-up inspection', c: '#0119', cat: 'Inspection', s: '09-07', d: '10-07', w: who('RS', 'Ravi S.', 'o24-av-g'), st: H.pill('Completed', 'green', 'sm'), cl: chip('g', '10/10 clear') },
+      { n: 'Driveway pour', c: '#0126', cat: 'Concrete', s: '28-07', d: '29-07', w: who('TB', 'Tom B.', 'o24-av-b'), st: H.pill('Completed', 'green', 'sm'), cl: chip('g', '9/9 clear') },
+      { n: 'Painting touch-ups', c: '#0133', cat: 'Finishing', s: '05-08', d: '06-08', w: who('AM', 'Amelia M.'), st: H.pill('Completed', 'green', 'sm'), cl: chip('g', '6/6 clear') },
+      { n: 'Fencing install', c: '#0140', cat: 'Fencing', s: '12-08', d: '12-08', w: who('JL', 'Jake L.', 'o24-av-a'), st: H.pill('Completed', 'green', 'sm'), cl: chip('g', '8/8 clear') },
+      { n: 'Client handover', c: '#0142', cat: 'Handover', s: '12-08', d: '12-08', w: who('AM', 'Amelia M.'), st: H.pill('Completed', 'green', 'sm'), cl: `<span class="hl" style="display:inline-flex">${chip('r', '10/10 · 2 flagged')}</span>`, sel: true },
+      { n: 'Utilities connection', c: '#0147', cat: 'Utilities', s: '13-08', d: '—', w: who('RS', 'Ravi S.', 'o24-av-g'), st: H.pill('Booked', 'grey', 'sm'), cl: chip('n', 'Not started') },
+      { n: 'Defect repairs', c: '#0153', cat: 'Maintenance', s: '14-08', d: '—', w: who('AM', 'Amelia M.'), st: H.pill('Booked', 'grey', 'sm'), cl: chip('n', 'Not started') },
+      { n: 'Landscaping', c: '#0151', cat: 'Landscaping', s: '18-08', d: '—', w: who('TB', 'Tom B.', 'o24-av-b'), st: H.pill('Booked', 'grey', 'sm'), cl: chip('n', 'Not started') },
+    ];
+    return `<div class="app">${H.rail('sched')}<main class="main o24-main">${H.topbar({ title: 'Lot 42 Northmead Dr' })}
+      <section class="card o24-lot"><div class="o24-lot-top"><div class="o24-lot-ic">${IC.home}</div><div><div class="o24-lot-name">Lot 42 Northmead Dr</div><div class="sub">Northmead · VIC · 9 bookings · 6 completed</div></div>${H.pill('Handover stage', 'amber')}</div>
+        <div class="o24-lt"><span class="o24-on">Bookings <span class="count">9</span></span><span>Documents <span class="count">4</span></span><span>Hazards <span class="count">1</span></span><span>Site visits <span class="count">1</span></span></div></section>
+      <section class="card o24-tc"><table class="o24-t">
+        <thead><tr><th>Booking</th><th>Category</th><th>Scheduled</th><th>Completed</th><th>Contractor</th><th>Status</th><th>Checklist</th></tr></thead>
+        <tbody>${rows.map(r => `<tr class="${r.sel ? 'o24-sel' : ''}"><td><div class="o24-bn">${r.n}</div><div class="o24-bc">${r.c}</div></td><td>${r.cat}</td><td>${r.s}</td><td class="${r.d === '—' ? 'o24-dim' : ''}">${r.d}</td><td>${r.w}</td><td>${r.st}</td><td>${r.cl}</td></tr>`).join('')}</tbody>
+      </table></section></main>
+      <aside class="o24-panel">
+        <div class="o24-ph"><span class="eyebrow-sm">Booking #0142</span><span class="x">${IC.x}</span></div>
+        <div class="o24-pt"><div><div class="o24-pt-name">Client handover</div><div class="sub">Lot 42 Northmead · VIC · 12-08-2026</div></div><span class="btn dark">Manage ${IC.down}</span></div>
+        <div class="tabs"><span class="tab">Details</span><span class="tab active">Checklist <span class="dot"></span></span><span class="tab">Activity <span class="count">2</span></span></div>
+        <div class="o24-body hl">
+          <div class="o24-sum"><div class="o24-sum-top">${H.pill('10/10 answered', 'green', 'sm')}${H.pill('2 flagged', 'flag', 'sm')}${H.fingerprint()}</div>
+            <div class="sub">Mike T. · 12-08-2026, 02:40 PM · 17 responses</div></div>
+          ${H.seg([['All', 10], ['Flagged', 2]], 1)}
+          <div class="cl-list">${H.q(CHECKLIST[1], { open: true })}${H.q(CHECKLIST[4])}</div>
+          <div class="o24-more">8 more answered as expected ${IC.down}</div>
+        </div>
+      </aside></div>`;
+  },
+},
+{
+  no: 25, cat: 'elsewhere', name: 'Contractor profile track record',
+  desc: 'Tapping Amelia Marsh on the handover page opens her profile sheet with a checklist track record: jobs done, how many had flags, and a history of her checklists. Each one has a "View" button.',
+  pros: ['Shows a pattern, not just one job', 'Useful when choosing who to book next', 'Links straight to past checklists'],
+  cons: ['Can feel like scoring the contractor', 'Numbers mislead when there are only a few jobs'],
+  css: `.o25-sheet{position:absolute;top:0;right:0;bottom:0;width:520px;background:var(--card);border-radius:16px 0 0 16px;box-shadow:0 18px 40px -12px rgba(15,17,25,.35);padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow:hidden;}
+    .o25-top{display:flex;align-items:center;gap:8px;}
+    .o25-top .x{margin-left:auto;}
+    .o25-who{display:flex;align-items:center;gap:12px;}
+    .o25-who .avatar{width:48px;height:48px;font-size:15px;}
+    .o25-name{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px;}
+    .o25-who .btn{margin-left:auto;}
+    .o25-contacts{display:grid;grid-template-columns:1.45fr 1fr;gap:8px;}
+    .o25-contacts .contact,.o25-contacts .contact:last-child{border:1px solid var(--line);border-radius:8px;padding:7px 8px;}
+    .o25-track{display:flex;flex-direction:column;gap:10px;}
+    .o25-th{display:flex;align-items:center;gap:8px;}
+    .o25-th b{font-size:13px;font-weight:600;}
+    .o25-th .seg{margin-left:auto;}
+    .o25-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .o25-stats > div{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px 12px;}
+    .o25-stats b{display:block;font-size:20px;font-weight:800;line-height:1.2;}
+    .o25-stats .sub{margin-top:1px;}
+    .o25-strip{display:flex;align-items:center;gap:10px;font-size:10.5px;color:var(--muted);}
+    .o25-rows{display:flex;flex-direction:column;gap:6px;}
+    .o25-row{padding:8px 10px;gap:10px;}
+    .o25-row .row-title{white-space:nowrap;}
+    .o25-row .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .o25-row .pill{margin-left:auto;}
+    .o25-row > .btn{margin-left:0;}
+    .o25-ok{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex:none;background:var(--green-soft);color:var(--green);}
+    .o25-foot{text-align:center;font-size:11px;font-weight:600;color:var(--blue);}`,
+  render: () => {
+    const jobs = [
+      { t: 'Client handover · Lot 42 Northmead Dr', s: '12-08-2026 · Q5 defects found · Q2 client not present', flags: 2 },
+      { t: 'Final clean · Lot 17 Skyview Terrace', s: '12-08-2026 · 8/8 answered as expected', flags: 0 },
+      { t: 'Site inspection · Lot 9 Riverbend Rd', s: '11-08-2026 · Q4 site access delayed', flags: 1 },
+      { t: 'Landscaping sign-off · Lot 3 Harbour View', s: '07-08-2026 · 6/6 answered as expected', flags: 0 },
+      { t: 'Painting touch-ups · Lot 42 Northmead Dr', s: '06-08-2026 · 6/6 answered as expected', flags: 0 },
+    ];
+    const strip = `<span class="fp">${[...'.........x.x'].map(ch => `<i class="${ch === 'x' ? 'r' : ''}"></i>`).join('')}</span>`;
+    return H.page({
+      overlay: `<div class="dim"></div>
+      <aside class="o25-sheet">
+        <div class="o25-top"><span class="eyebrow-sm">Contractor profile</span><span class="x">${IC.x}</span></div>
+        <div class="o25-who"><div class="avatar">AM</div><div><div class="o25-name">Amelia Marsh ${H.pill('Active', 'green', 'sm')}</div><div class="sub">Truland Homes · Handover &amp; finishing crew</div></div><span class="btn">${IC.cal}Book again</span></div>
+        <div class="o25-contacts"><div class="contact"><div class="contact-ic">${IC.mail}</div><span>amelia.marsh@trulandhomes.com.au</span></div><div class="contact"><div class="contact-ic">${IC.phone}</div><span>0412 345 678</span><span class="copy">Call</span></div></div>
+        <div class="o25-track hl">
+          <div class="o25-th"><b>Checklist track record</b><span class="sub" style="margin:0">last 90 days</span></div>
+          <div class="o25-stats">
+            <div><b>12</b><div class="sub">jobs with a checklist</div></div>
+            <div><b style="color:var(--red)">2</b><div class="sub">jobs with flags</div></div>
+            <div><b>0.3</b><div class="sub">avg flags per job</div></div>
+          </div>
+          <div class="o25-strip">${strip}<span>Last 12 jobs, newest on the right</span></div>
+          <div class="o25-th"><b>Checklist history</b><span class="count">12</span>${H.seg([['All', 12], ['Flagged', 2]])}</div>
+          <div class="o25-rows">${jobs.map(j => `<div class="row o25-row">${j.flags ? `<div class="flag-ic">${IC.flag}</div>` : `<div class="o25-ok">${IC.check}</div>`}
+            <div style="min-width:0"><div class="row-title">${j.t}</div><div class="sub">${j.s}</div></div>
+            ${j.flags ? H.pill(`${j.flags} flagged`, 'flag', 'sm') : H.pill('Clear', 'green', 'sm')}<span class="btn">View</span></div>`).join('')}</div>
+          <div class="o25-foot">See all 12 checklists</div>
+        </div>
+      </aside>`,
+    });
+  },
+},
+{
+  no: 26, cat: 'elsewhere', name: 'Site visit carries flagged items',
+  desc: 'Opening "Report site visit" for Lot 42 pulls in the two flagged items from the handover checklist. The supervisor marks each one still open or resolved, and takes a "Now" photo next to the one from handover.',
+  pros: ['Flags get re-checked on the next visit, not forgotten', 'Before and after photos side by side', 'No need to open the checklist separately'],
+  cons: ['Makes the visit form longer', 'Only helps if someone actually visits'],
+  css: `.o26-modal{position:absolute;top:58px;left:214px;width:660px;background:var(--card);border-radius:14px;box-shadow:0 18px 40px -12px rgba(15,17,25,.35);display:flex;flex-direction:column;overflow:hidden;}
+    .o26-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);}
+    .o26-head h2{font-size:16px;font-weight:700;}
+    .o26-head .x{margin-left:auto;}
+    .o26-body{padding:14px 18px;display:flex;flex-direction:column;gap:12px;}
+    .o26-carry{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;}
+    .o26-ch{display:flex;align-items:center;gap:10px;}
+    .o26-ch b{font-size:12.5px;}
+    .o26-ch .sub{margin-top:1px;}
+    .o26-ch .btn{margin-left:auto;}
+    .o26-it{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;padding:10px 12px;}
+    .o26-it-top{display:flex;align-items:flex-start;gap:10px;}
+    .o26-it-top .seg{margin-left:auto;flex:none;}
+    .o26-it-top .seg > span{padding:5px 10px;}
+    .o26-ba{display:flex;align-items:flex-end;gap:10px;margin:10px 0 0 32px;}
+    .o26-cell{display:flex;flex-direction:column;gap:5px;}
+    .o26-arrow{color:var(--faint);align-self:center;margin-top:18px;}
+    .o26-arrow svg{width:18px;height:18px;}
+    .o26-cam{width:150px;height:96px;border:1.5px dashed var(--line-strong);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text);font-size:11px;font-weight:600;background:var(--soft);}
+    .o26-cam svg{width:22px;height:22px;color:var(--red);}
+    .o26-cam .sub{margin:0;font-weight:500;}
+    .o26-more{margin-left:auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+    .o26-more > div{display:flex;gap:6px;}
+    .o26-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .o26-lab{display:block;font-size:11px;font-weight:600;margin-bottom:5px;}
+    .o26-in{display:flex;align-items:center;gap:8px;border:1px solid var(--line-strong);border-radius:8px;padding:9px 10px;font-size:12px;font-weight:500;}
+    .o26-in svg{margin-left:auto;color:var(--muted);}
+    .o26-ta{height:58px;border:1px solid var(--line-strong);border-radius:8px;padding:9px 10px;font-size:12px;color:var(--faint);}
+    .o26-foot{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);}
+    .o26-foot .sub{margin:0 auto 0 0;}`,
+  render: () => {
+    const q5 = CHECKLIST[4], q2 = CHECKLIST[1];
+    return H.page({
+      overlay: `<div class="dim"></div>
+      <div class="o26-modal">
+        <div class="o26-head"><div><h2>Report site visit</h2><div class="sub">Lot 42 Northmead · VIC · Client handover #0142</div></div><span class="x">${IC.x}</span></div>
+        <div class="o26-body">
+          <div class="o26-carry hl">
+            <div class="o26-ch"><div class="flag-ic">${IC.flag}</div><div><b>From last handover checklist · 2 to re-check</b><div class="sub">Submitted by Mike T. · 12-08-2026, 02:40 PM</div></div><span class="btn ghost">View checklist ${IC.right}</span></div>
+            <div class="o26-it">
+              <div class="o26-it-top"><span class="q-num red">5</span><div><div class="row-title">${q5.q}</div><div class="sub">Mike T., Sarah K. said "Yes" · Permit.pdf, Insurance.pdf · 3 photos</div></div>${H.seg([['Still open'], ['Resolved']], -1)}</div>
+              <div class="o26-ba">
+                <div class="o26-cell"><span class="eyebrow-sm">At handover · Sarah K. 10-08</span>${H.photo(0, 150, 96)}</div>
+                <span class="o26-arrow">${IC.right}</span>
+                <div class="o26-cell"><span class="eyebrow-sm">Now</span><div class="o26-cam">${IC.camera}Take photo<span class="sub">Same angle as handover</span></div></div>
+                <div class="o26-more"><div>${H.photo(1, 44)}${H.photo(2, 44)}</div><span class="sub" style="margin:0">2 more from handover</span></div>
+              </div>
+            </div>
+            <div class="o26-it"><div class="o26-it-top"><span class="q-num red">2</span><div><div class="row-title">${q2.q}</div><div class="sub">Priya R. said "No" · staff notified</div></div>${H.seg([['Still open'], ['Resolved']], -1)}</div></div>
+          </div>
+          <div class="o26-fields">
+            <div><span class="o26-lab">Visit type</span><div class="o26-in">Follow-up inspection${IC.down}</div></div>
+            <div><span class="o26-lab">Date &amp; time</span><div class="o26-in">14-08-2026 · 10:00 AM${IC.cal}</div></div>
+          </div>
+          <div><span class="o26-lab">Notes</span><div class="o26-ta">What did you find on site?</div></div>
+        </div>
+        <div class="o26-foot"><span class="sub">Re-check results are added to the handover checklist</span><span class="btn lg">Cancel</span><span class="btn primary lg">Save visit</span></div>
+      </div>`,
+    });
+  },
+},
+);
+
+</script>
+
+<script>
+/* ======================= Render gallery ======================= */
+const gallery = document.getElementById('gallery');
+const extraCss = document.createElement('style');
+extraCss.textContent = OPTIONS.map(o => o.css || '').join('\n');
+document.head.appendChild(extraCss);
+OPTIONS.sort((a, b) => a.no - b.no);
+gallery.innerHTML = OPTIONS.map(o => {
+  let body;
+  try { body = o.render(); } catch (e) { body = `<div style="padding:40px;color:#fff">Render error: ${e.message}</div>`; console.error(o.no, e); }
+  return `<article class="opt-card" data-cat="${o.cat}" id="opt-${o.no}">
+    <div class="opt-head"><span class="opt-no">${o.no}</span><div><h3>${o.name}</h3><p>${o.desc}</p></div><span class="cat ${o.cat}">${CAT_LABEL[o.cat]}</span><button class="enlarge" data-enlarge="${o.no}">⤢ Enlarge</button></div>
+    <div class="shot"><div class="tablet">${body}</div></div>
+    <ul class="pc">${(o.pros || []).map(p => `<li class="pro">${p}</li>`).join('')}${(o.cons || []).map(c => `<li class="con">${c}</li>`).join('')}</ul>
+  </article>`;
+}).join('');
+
+function fit(){
+  document.querySelectorAll('.shot').forEach(shot => {
+    const s = shot.clientWidth / 1024;
+    shot.querySelector('.tablet').style.transform = `scale(${s})`;
+    shot.style.height = `${720 * s}px`;
+  });
+}
+window.addEventListener('resize', fit);
+fit();
+
+/* ======================= Making the designs tappable =======================
+   The designs are drawn as static screens, so any tap that means "open the checklist"
+   opens the same read-only checklist screen inside that tablet. Everything else says
+   it's a static part of the design instead of silently doing nothing. */
+const OPEN_WORDS = /checklist|review|view|open|flagged|next|prev|go to|see all|show all|walk/i;
+function overlayHtml(st){
+  return `<div class="screen cl-overlay">
+    <div class="screen-head"><span class="btn" data-close>${IC.back}Back</span><h2>Handover checklist</h2>${H.pill('Completed', 'completed')}${H.pill('2 flagged', 'flag')}
+      <span class="sub" style="margin:0">Mike T. · 12-08-2026, 02:40 PM</span>
+      <div class="right"><div class="seg">${[['all', 'All', 10], ['flagged', 'Flagged', 2]].map(([k, t, n]) => `<span data-f="${k}" class="${st.filter === k ? 'active' : ''}">${t} <span class="count">${n}</span></span>`).join('')}</div></div></div>
+    <div class="ov-body"><div class="cl-list">${CHECKLIST.filter(c => st.filter === 'all' || c.flagged).map(c => `<div data-qi="${c.i}">${H.q(c, { open: st.open.includes(c.i) })}</div>`).join('')}</div></div></div>`;
+}
+function renderOverlay(tablet, st){
+  tablet._st = st;
+  const old = tablet.querySelector('.cl-overlay');
+  const body = old && old.querySelector('.ov-body');
+  const scroll = body ? body.scrollTop : 0;
+  if (old) old.remove();
+  tablet.insertAdjacentHTML('beforeend', overlayHtml(st));
+  tablet.querySelector('.ov-body').scrollTop = scroll;
+}
+function toast(tablet, msg){
+  tablet.querySelectorAll('.toast').forEach(t => t.remove());
+  tablet.insertAdjacentHTML('beforeend', `<div class="toast">${msg}</div>`);
+  setTimeout(() => tablet.querySelectorAll('.toast').forEach(t => t.remove()), 1400);
+}
+function handleTabletClick(e){
+  const tablet = e.target.closest('.tablet');
+  if (!tablet) return;
+  const ov = tablet.querySelector('.cl-overlay');
+  if (ov){
+    if (e.target.closest('[data-close]')) { ov.remove(); return; }
+    const f = e.target.closest('[data-f]');
+    if (f) { renderOverlay(tablet, { ...tablet._st, filter: f.dataset.f }); return; }
+    const qi = e.target.closest('[data-qi]');
+    if (qi && e.target.closest('.q-head')){
+      const i = Number(qi.dataset.qi), open = tablet._st.open.slice();
+      open.includes(i) ? open.splice(open.indexOf(i), 1) : open.push(i);
+      renderOverlay(tablet, { ...tablet._st, open });
+    }
+    return;
+  }
+  const trigger = e.target.closest('.btn, .hl, .cl-chip, .row, .pill, .q-head, .sp-item, .nav, .bk-row, .x, .seg span');
+  if (!trigger) return;
+  const text = trigger.textContent.trim();
+  const isControl = trigger.matches('.btn, .x, .pill, .seg span, .nav');
+  if (isControl && (trigger.matches('.x') || /^(close|exit|cancel|done)/i.test(text))) { toast(tablet, 'Closes this view'); return; }
+  if (isControl && /mark (reviewed|followed)/i.test(text)) { toast(tablet, '✓ Marked — it clears from the list'); return; }
+  if (isControl && /(open|go to) booking/i.test(text)) { toast(tablet, 'Goes to the Client Handover page'); return; }
+  // A plain "View" on the page's own Hazards / Site visits rows isn't about the checklist;
+  // only treat "View" as open when it belongs to what the option added.
+  const partOfOption = trigger.closest('.hl, .pop, .sheet, .screen') || trigger.closest('.row')?.querySelector('.flag-ic');
+  const strong = OPEN_WORDS.test(text) && !/^view$/i.test(text);
+  if (strong || (/view/i.test(text) && partOfOption) || trigger.matches('.hl, .cl-chip, .q-head')){
+    renderOverlay(tablet, { filter: /flag/i.test(text) ? 'flagged' : 'all', open: FLAGGED.map(c => c.i) });
+    return;
+  }
+  toast(tablet, `“${text.slice(0, 28)}” — static in this mockup`);
+}
+document.addEventListener('click', e => {
+  const en = e.target.closest('[data-enlarge]');
+  if (en){
+    const card = document.getElementById(`opt-${en.dataset.enlarge}`);
+    const s = Math.min(1, (innerWidth - 60) / 1024, (innerHeight - 60) / 720);
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal" data-modal><div class="modal-inner"><button class="modal-close" data-modal-close>${IC.x}</button>
+      <div class="shot" style="width:${1024 * s}px;height:${720 * s}px"><div class="tablet" style="transform:scale(${s})">${card.querySelector('.tablet').innerHTML}</div></div></div></div>`);
+    return;
+  }
+  if (e.target.closest('[data-modal-close]') || e.target.matches('[data-modal]')) { document.querySelector('[data-modal]')?.remove(); return; }
+  handleTabletClick(e);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelector('[data-modal]')?.remove(); });
+
+document.getElementById('filters').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  document.querySelectorAll('#filters button').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.opt-card').forEach(card => { card.hidden = b.dataset.cat !== 'all' && card.dataset.cat !== b.dataset.cat; });
+  fit();
+});
+</script>
+</body>
+</html>

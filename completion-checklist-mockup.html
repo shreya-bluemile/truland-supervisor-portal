@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Truland Completion Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --page-bg:#EEF0F3;
+    --ink:#0E1016;
+    --ink-soft:#1B1D26;
+    --canvas:#E8EBEF;
+    --surface:#FFFFFF;
+    --panel:#F7F8FA;
+    --border:#E1E4E9;
+    --border-strong:#D3D7DE;
+    --text:#10131A;
+    --text-2:#4A4F5A;
+    --text-muted:#8B92A1;
+    --text-faint:#AEB4BE;
+    --accent:#FF1E32;
+    --accent-hover:#E8142A;
+    --good:#1C7A43; --good-bg:#DFF3E3;
+    --bad:#C4111F;  --bad-bg:#FFF0F1;
+    --tag:#C4111F;  --tag-bg:#FFF0F1;
+    --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+    --gutter:28px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page-bg);color:var(--text-2);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+  button,input,textarea{font:inherit;color:inherit;}
+  button{cursor:pointer;background:none;border:0;padding:0;}
+  .i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+  .i.sm{width:12px;height:12px;stroke-width:2.6;}
+
+  /* ---- Page around the frame (same as the other mockups) ---- */
+  .page{max-width:1400px;margin:0 auto;padding:36px 28px 64px;}
+  .masthead{display:flex;flex-direction:column;gap:6px;}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);}
+  h1.page-title{font-size:26px;font-weight:800;letter-spacing:-.01em;margin:0;color:#171A21;}
+  .sub{font-size:14px;color:#6B6F78;max-width:72ch;line-height:1.5;margin:2px 0 0;}
+  .controls{display:flex;align-items:flex-start;gap:12px;margin:20px 0 24px;flex-wrap:wrap;}
+  .toggle{display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 14px 0 10px;background:#fff;border:1px solid var(--border);border-radius:10px;font-size:12.5px;font-weight:600;color:#3B3F49;}
+  .toggle .sw{width:30px;height:18px;border-radius:999px;background:#D3D7DE;position:relative;transition:background .15s;}
+  .toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s;}
+  .toggle[aria-pressed="true"] .sw{background:var(--tag);}
+  .toggle[aria-pressed="true"] .sw::after{transform:translateX(12px);}
+  .fix-list{display:none;margin:0;padding:12px 16px;list-style:none;background:#fff;border:1px solid var(--border);border-radius:10px;font-size:12.5px;color:#5A5E67;gap:7px;max-width:760px;counter-reset:fix;}
+  .fix-list li{display:flex;gap:10px;line-height:1.45;counter-increment:fix;}
+  .fix-list li::before{content:counter(fix);width:18px;height:18px;border-radius:50%;background:var(--tag);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px;}
+  .fix-list b{color:var(--text);font-weight:600;}
+  .show-fixes .fix-list{display:grid;}
+
+  .frame-wrap{overflow-x:auto;border-radius:26px;}
+  .frame{display:flex;width:1320px;height:820px;background:var(--ink);border-radius:26px;overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(15,17,25,.35), 0 2px 6px rgba(15,17,25,.15);}
+
+  /* ---- Sidebar: logo, section label and nav icons share one 12px inset ---- */
+  .sidebar{width:240px;flex:none;display:flex;flex-direction:column;padding:24px 16px;gap:28px;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;padding:0 0 0 12px;}
+  .logo{font-weight:800;font-size:16px;letter-spacing:.01em;line-height:1.05;color:#fff;}
+  .logo b{color:var(--accent);}
+  .logo small{display:block;font-size:9.5px;font-weight:700;letter-spacing:.22em;margin-top:2px;}
+  .burger{width:32px;height:32px;border-radius:8px;background:var(--ink-soft);color:#8A8F9C;display:flex;align-items:center;justify-content:center;}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3E5A6E;padding:0 12px;margin-bottom:10px;}
+  .nav{display:flex;flex-direction:column;gap:4px;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;color:#9199A8;font-size:13.5px;font-weight:500;}
+  .nav-item:hover{background:var(--ink-soft);color:#fff;}
+  .nav-item.active{background:var(--accent);color:#fff;font-weight:600;}
+  .nav-item .badge{margin-left:auto;font-family:var(--font-mono);font-size:11px;font-weight:600;background:rgba(255,255,255,.22);border-radius:999px;padding:2px 8px;}
+  .sidebar-spacer{flex:1;}
+  .profile{display:flex;align-items:center;gap:8px;background:var(--ink-soft);border-radius:16px;padding:10px 8px 10px 10px;}
+  .avatar-jd{width:34px;height:34px;border-radius:12px;background:#33415A;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;}
+  .profile .who{flex:1;min-width:0;}
+  .profile .name{font-size:13px;font-weight:600;color:#fff;}
+  .profile .role{font-size:10.5px;color:#7C8492;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .profile .exit{width:24px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#7C8492;}
+
+  /* ---- Main: one gutter on all four sides ---- */
+  .main{flex:1;min-width:0;background:var(--canvas);padding:var(--gutter);display:flex;flex-direction:column;gap:20px;}
+  .topbar{display:flex;align-items:center;gap:14px;min-height:44px;}
+  .back{width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text);flex:none;}
+  .back:hover{background:var(--panel);}
+  .title h1{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em;color:var(--text);}
+  .title p{margin:3px 0 0;font-family:var(--font-mono);font-size:11.5px;color:var(--text-muted);}
+  .top-actions{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .saved{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--good);margin-right:6px;}
+  .search{display:flex;align-items:center;gap:8px;width:220px;height:40px;padding:0 14px;background:#fff;border:1px solid var(--border);border-radius:999px;color:var(--text-faint);}
+  .search input{border:0;outline:0;background:none;flex:1;min-width:0;font-size:13px;color:var(--text);}
+  .search input::placeholder{color:var(--text-faint);}
+  .bell{position:relative;width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-2);}
+  .bell::after{content:"";position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px #fff;}
+
+  /* ---- Card: both columns share one footer row, so the dividers line up ---- */
+  /* No card: the page itself is the surface. Header, content, panel and footer are split by hairlines only. */
+  /* Left side sits on the screen background; the progress panel is the white surface. */
+  .main{background:var(--canvas);padding:0;gap:0;}
+  .card{background:transparent !important;}
+  .topbar,.q-foot{border-color:#D6DAE0 !important;}
+  .p-area,.p-foot{border-left-color:#D6DAE0 !important;}
+  .q-area .chip{background:#fff;box-shadow:inset 0 0 0 1px var(--border);}
+  .p-area,.p-foot{background:var(--surface) !important;}
+  .step:hover{background:#F3F4F6;}
+  .step.current,.step.current:hover{background:#EEF0F3;}
+  .topbar{padding:18px var(--gutter);border-bottom:1px solid var(--border);min-height:77px;}
+  .q-area{padding:40px var(--gutter) !important;}
+  .q-foot{padding:0 var(--gutter) !important;}
+  .q-body{max-width:720px;}
+  .card{flex:1;min-height:0;background:var(--surface);overflow:hidden;
+    display:grid;grid-template-columns:minmax(0,1fr) 320px;grid-template-rows:minmax(0,1fr) 76px;
+    grid-template-areas:"q p" "qf pf";}
+  .q-area{grid-area:q;padding:36px 40px;overflow:auto;}
+  .q-foot{grid-area:qf;border-top:1px solid var(--border);padding:0 40px;display:flex;align-items:center;gap:16px;}
+  .p-area{grid-area:p;background:var(--panel);border-left:1px solid var(--border);padding:24px 20px 12px;display:flex;flex-direction:column;min-height:0;}
+  .p-foot{grid-area:pf;background:var(--panel);border-left:1px solid var(--border);border-top:1px solid var(--border);padding:0 20px;display:flex;align-items:center;}
+
+  /* Question */
+  .eyebrow-row{display:flex;align-items:center;gap:10px;}
+  .q-eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);}
+  .chip{font-size:10.5px;font-weight:600;color:var(--text-2);background:#ECEDF1;border-radius:999px;padding:2px 9px;}
+  .q-title{margin:12px 0 0;font-size:24px;line-height:1.3;font-weight:800;letter-spacing:-.015em;color:var(--text);text-wrap:balance;}
+  .q-help{margin:8px 0 0;font-size:14px;line-height:1.5;color:var(--text-muted);}
+
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px;}
+  .answer{height:72px;border:1.5px solid var(--border-strong);border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;gap:12px;font-size:16px;font-weight:700;color:var(--text);transition:border-color .15s,background .15s;}
+  .answer:hover{border-color:#B9BEC7;}
+  .answer .dot{width:30px;height:30px;border-radius:50%;background:#F0F2F5;display:flex;align-items:center;justify-content:center;color:var(--text-2);}
+  .answer.is-good{border-color:var(--good);background:var(--good-bg);color:var(--good);}
+  .answer.is-good .dot{background:var(--good);color:#fff;}
+  .answer.is-bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);}
+  .answer.is-bad .dot{background:var(--bad);color:#fff;}
+
+  .field{margin-top:28px;}
+  .field textarea,.ev-note{width:100%;border:1.5px solid var(--border-strong);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;resize:vertical;outline:0;background:#fff;}
+  .field textarea{min-height:150px;}
+  .field input[type=date]{width:280px;height:56px;border:1.5px solid var(--border-strong);border-radius:14px;padding:0 16px;font-size:15px;outline:0;background:#fff;}
+  .field textarea:focus,.field input:focus,.ev-note:focus{border-color:var(--text);}
+
+  /* Note / Photo / Flag: one control row straight under the answers, no box around it */
+  .evidence{margin-top:16px;}
+  .tools{display:flex;align-items:center;gap:12px;}
+  .tool-group{display:inline-flex;border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;background:#fff;}
+  .tool{height:38px;padding:0 14px;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--text-2);}
+  .tool + .tool{border-left:1px solid var(--border-strong);}
+  .tool:hover{background:var(--panel);}
+  .tools-hint{font-size:12px;color:var(--text-muted);}
+  .tool[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .tool.flag[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);}
+  .tool .ct{font-family:var(--font-mono);font-size:10.5px;background:var(--canvas);border-radius:999px;padding:1px 6px;}
+  .ev-note{margin-top:14px;min-height:84px;}
+  .thumbs{display:flex;gap:8px;margin-top:14px;}
+  .thumb{width:72px;height:54px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+  .thumb svg{display:block;width:100%;height:100%;}
+
+  /* Footer buttons */
+  .btn{height:44px;min-width:132px;padding:0 18px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;font-weight:700;border:1px solid var(--border-strong);background:#fff;color:var(--text);}
+  .btn:hover:not(:disabled){background:var(--panel);}
+  .btn:disabled{color:var(--text-faint);border-color:var(--border);cursor:not-allowed;}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn.primary:hover:not(:disabled){background:var(--accent-hover);}
+  .btn.primary:disabled{background:#FFC2C8;border-color:#FFC2C8;color:#fff;}
+  .btn.block{width:100%;}
+  .btn.dark{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .btn.dark:hover{background:#262935;}
+  .up-next{flex:1;text-align:center;font-size:12.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .up-next .n{font-family:var(--font-mono);font-size:11px;margin:0 5px 0 8px;}
+  .up-next b{color:var(--text);font-weight:600;}
+
+  /* Progress panel */
+  .p-head{display:flex;align-items:center;gap:14px;padding:0 4px 20px;border-bottom:1px solid var(--border);}
+  .ring{position:relative;width:52px;height:52px;flex:none;}
+  .ring svg{width:52px;height:52px;transform:rotate(-90deg);}
+  .ring circle{fill:none;stroke-width:5;}
+  .ring .track{stroke:#E4E7EC;}
+  .ring .bar{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .3s;}
+  .ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);}
+  .p-count b{display:block;font-size:14px;font-weight:700;color:var(--text);}
+  .p-count span{font-size:12px;color:var(--text-muted);}
+  .steps-wrap{display:flex;flex-direction:column;min-height:0;flex:1;margin-top:16px;}
+  .p-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin:0 4px 8px;}
+  .steps{list-style:none;margin:0;padding:0 0 2px;display:flex;flex-direction:column;gap:2px;overflow:auto;min-height:0;}
+  .step{display:flex;align-items:center;gap:12px;width:100%;height:36px;padding:0 10px;border-radius:10px;font-size:13px;color:var(--text-2);text-align:left;}
+  .step:hover{background:#F0F2F5;}
+  .step .n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text-muted);flex:none;}
+  .step.done .n{background:var(--good-bg);border-color:var(--good-bg);color:var(--good);}
+  .step.current,.step.current:hover{background:#E8EBEF;color:var(--text);font-weight:600;}
+  .step.current .n{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .step .flag{margin-left:auto;color:var(--accent);display:flex;}
+
+  /* "Show what changed" markers */
+  .show-fixes [data-fix],.show-fixes [data-fix-outline]{position:relative;outline:1.5px dashed var(--tag);outline-offset:4px;}
+  .show-fixes [data-fix]::before{content:attr(data-fix);position:absolute;top:-14px;left:-14px;z-index:5;width:20px;height:20px;border-radius:50%;background:var(--tag);color:#fff;font:700 11px/20px var(--font-body);text-align:center;box-shadow:0 0 0 2px #fff;}
+  .show-fixes .q-foot,.show-fixes .p-foot{outline-offset:-6px;}
+  .show-fixes .q-foot::before{top:-10px;left:8px;}
+
+  /* ---- Options with follow-up actions ---- */
+  .answers.cols-3{grid-template-columns:repeat(3,1fr);}
+  .answers.cols-4{grid-template-columns:repeat(2,1fr);}
+  .answers.multi .answer{height:56px;font-size:14px;justify-content:flex-start;padding:0 18px;}
+  .answer.is-warn{border-color:#B35A0B;background:#FCEAD1;color:#B35A0B;}
+  .answer.is-warn .dot{background:#B35A0B;color:#fff;}
+  .action{margin-top:16px;border:1px solid #F6C3C8;background:#FFF5F6;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:14px;}
+  .action.done{border-color:#BFE3CB;background:#F1FAF4;}
+  .action-head{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--bad);}
+  .action.done .action-head{color:var(--good);}
+  .action-head span{margin-left:auto;font-family:var(--font-mono);font-size:10.5px;letter-spacing:0;text-transform:none;background:#fff;border:1px solid #F6C3C8;border-radius:999px;padding:1px 8px;}
+  .a-field{display:flex;flex-direction:column;gap:6px;}
+  .a-label{font-size:12.5px;font-weight:600;color:var(--text);}
+  .a-label i{color:var(--bad);font-style:normal;}
+  .a-note{width:100%;min-height:80px;border:1px solid var(--border-strong);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;resize:vertical;outline:0;background:#fff;}
+  .a-note:focus{border-color:var(--text);}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+  .slot{display:flex;align-items:center;gap:10px;background:#fff;border:1px dashed var(--border-strong);border-radius:10px;padding:8px 8px 8px 10px;}
+  .slot.has{border-style:solid;border-color:#BFE3CB;}
+  .slot-ic{width:30px;height:30px;border-radius:8px;background:var(--bad-bg);color:var(--bad);display:flex;align-items:center;justify-content:center;flex:none;}
+  .slot.has .slot-ic{background:var(--good-bg);color:var(--good);}
+  .slot-txt{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .slot-txt b{font-size:12.5px;font-weight:600;color:var(--text);}
+  .slot-txt small{font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .slot-btn{height:30px;padding:0 12px;border:1px solid var(--border-strong);border-radius:8px;background:#fff;font-size:12px;font-weight:600;color:var(--text);flex:none;}
+  .slot-btn:hover{background:var(--panel);}
+  .resched{margin-top:24px;display:flex;flex-direction:column;gap:16px;}
+  .check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--text);background:#fff;border:1px solid var(--border-strong);border-radius:12px;padding:14px 16px;cursor:pointer;width:fit-content;}
+  .check input{width:18px;height:18px;accent-color:var(--accent);}
+  .resched input[type=date]{width:260px;height:48px;border:1px solid var(--border-strong);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;}
+  .step.waiting .n{background:var(--warn-bg,#FCEAD1);border-color:#FCEAD1;color:#B35A0B;font-family:var(--font-body);font-weight:800;}
+  .step .needs{margin-left:auto;font-size:10.5px;font-weight:600;color:#B35A0B;}
+  .p-count em{font-style:normal;color:#B35A0B;font-weight:600;}
+  /* ---- Follow-up v2 ---- */
+  .follow-up{margin-top:14px;background:#fff;border-radius:16px;padding:18px 20px 20px;display:flex;flex-direction:column;gap:18px;}
+  .fu-why{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);}
+  .fu-why b{color:var(--text);font-weight:700;}
+  .fu-ic{width:24px;height:24px;border-radius:50%;background:#FFE4E7;color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none;}
+  .fu-ic .i{width:13px;height:13px;stroke-width:2.4;}
+  .fu-field{display:flex;flex-direction:column;gap:8px;}
+  .fu-label{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .fu-label .req{color:var(--accent);font-style:normal;}
+  .fu-label .opt{font-size:11px;font-weight:600;color:var(--text-muted);border:1px solid var(--border-strong);border-radius:999px;padding:1px 8px;background:#fff;}
+  .follow-up .a-note{background:#fff;border:1px solid var(--border-strong);border-radius:12px;min-height:84px;padding:12px 14px;font-size:14px;}
+  .follow-up .a-note:focus{border-color:var(--text);}
+  .tiles{display:flex;flex-wrap:wrap;gap:10px;}
+  .tile{width:78px;height:66px;border-radius:12px;border:1.5px dashed var(--border-strong);background:#F7F8FA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;color:var(--text);position:relative;overflow:hidden;}
+  button.tile:hover{border-color:var(--text);}
+  .tile.has{border:0;}
+  .tile-img{position:absolute;inset:0;}
+  .tile-img svg{width:100%;height:100%;display:block;}
+  .tile-x{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(14,16,22,.6);color:#fff;display:flex;align-items:center;justify-content:center;}
+
+  /* ---- Submitted review ---- */
+  [hidden]{display:none !important;}
+  .review{flex:1;min-height:0;overflow:auto;padding:28px var(--gutter) 40px;display:flex;flex-direction:column;gap:20px;}
+  .rv-hero{display:flex;align-items:center;gap:16px;background:#fff;border-radius:16px;padding:20px 22px;}
+  .rv-ok{width:44px;height:44px;border-radius:50%;background:var(--good);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;}
+  .rv-ok .i{width:22px;height:22px;stroke-width:2.6;}
+  .rv-title{flex:1;min-width:0;}
+  .rv-title h2{margin:0;font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.01em;}
+  .rv-title p{margin:3px 0 0;font-size:13px;color:var(--text-muted);}
+  .rv-title b{color:var(--text-2);font-weight:600;}
+  .rv-actions{display:flex;gap:8px;}
+  .rv-actions .btn{min-width:0;}
+  .rv-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .rv-stats > div{background:#fff;border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;}
+  .rv-stats span{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
+  .rv-stats b{font-size:24px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;}
+  .rv-stats b.sm{font-size:18px;line-height:30px;}
+  .rv-stats small{font-size:14px;color:var(--text-faint);font-weight:600;}
+  .rv-stats .bad b{color:var(--bad);} .rv-stats .good b{color:var(--good);} .rv-stats .warn b{color:#B35A0B;}
+  .rv-sec{background:#fff;border-radius:16px;padding:6px 22px 8px;}
+  .rv-sec h3{margin:0;padding:14px 0 10px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);display:flex;align-items:center;gap:8px;}
+  .attn-sec{box-shadow:inset 0 0 0 1px #F6C3C8;}
+  .attn-sec h3{color:var(--bad);}
+  .rv-sec h3 em{font-style:normal;font-family:var(--font-mono);background:var(--bad-bg);border-radius:999px;padding:0 7px;letter-spacing:0;}
+  .r-row{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--border);}
+  .r-n{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-faint);width:20px;flex:none;line-height:20px;}
+  .r-main{flex:1;min-width:0;}
+  .r-q{font-size:14px;font-weight:600;color:var(--text);line-height:20px;}
+  .r-ans{display:flex;flex-wrap:wrap;align-self:flex-start;align-items:flex-start;align-content:flex-start;justify-content:flex-end;gap:6px;max-width:300px;flex:none;}
+  .r-chip{font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;line-height:16px;white-space:nowrap;}
+  .r-chip.good{background:var(--good-bg);color:var(--good);}
+  .r-chip.bad{background:var(--bad-bg);color:var(--bad);}
+  .r-chip.warn{background:#FCEAD1;color:#B35A0B;}
+  .r-chip.neutral{background:#ECEDF1;color:var(--text-2);}
+  .r-chip.none{background:none;color:var(--text-faint);font-weight:600;}
+  .r-ev{margin-top:8px;display:flex;flex-direction:column;gap:8px;}
+  .r-note{margin:0;font-size:13px;line-height:1.5;color:var(--text-2);background:#F4F5F7;border-radius:10px;padding:8px 12px;}
+  .r-photos{display:flex;flex-wrap:wrap;gap:8px;}
+  .r-photos figure{margin:0;width:88px;}
+  .r-photos figure div{height:64px;border-radius:8px;overflow:hidden;}
+  .r-photos figure svg{width:100%;height:100%;display:block;}
+  .r-photos figcaption{font-size:10.5px;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .nudge{animation:nudge .5s;}
+  @keyframes nudge{20%,60%{transform:translateX(-6px);}40%,80%{transform:translateX(6px);}}
+  .sample-btn{display:inline-flex;align-items:center;height:38px;padding:0 14px;background:#fff;border:1px solid var(--border);border-radius:10px;font-size:12.5px;font-weight:600;color:#3B3F49;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="masthead">
+    <span class="eyebrow">Truland Homes · Supervisor App</span>
+    <h1 class="page-title">Completion checklist — layout fixes</h1>
+    <p class="sub">The same screen with the alignment problems fixed. Answer a question, add a note or jump between steps to try it.</p>
+  </div>
+
+  <div class="controls">
+    <button class="sample-btn" id="fill-sample">Fill sample answers</button>
+    <button class="toggle" id="fixes-toggle" aria-pressed="false"><span class="sw"></span>Show what changed</button>
+    <ol class="fix-list">
+      <li><span><b>One footer row.</b> Previous / Next and Review &amp; submit sit on the same line, centred, and the card has the same margin on every side.</span></li>
+      <li><span><b>Header rebuilt.</b> The job name moved up from the panel, the extra breadcrumb row is gone, and the header lines up with the card edges.</span></li>
+      <li><span><b>Light progress panel.</b> Dark is kept for the sidebar only, so the question stays the focus.</span></li>
+      <li><span><b>Count fixed.</b> “0 of 12 answered · 12 to go” now adds up, and it updates as you answer.</span></li>
+      <li><span><b>Question first.</b> Bigger title, the number moved into the label, and Note / Photo / Flag sit right under the answers. “Up next” moved into the footer.</span></li>
+    </ol>
+  </div>
+
+  <div class="frame-wrap">
+  <div class="frame">
+
+    <aside class="sidebar">
+      <div class="brand-row">
+        <div class="logo"><b>TRU</b>LAND<small>HOMES</small></div>
+        <button class="burger" aria-label="Collapse menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+      <div>
+        <div class="nav-label">Supervisor Portal</div>
+        <nav class="nav">
+          <a class="nav-item"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Dashboard</a>
+          <a class="nav-item active"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Schedules<span class="badge">12</span></a>
+          <a class="nav-item"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M9 12h6M9 16h4"/></svg>Timesheet</a>
+        </nav>
+      </div>
+      <div class="sidebar-spacer"></div>
+      <div class="profile">
+        <div class="avatar-jd">JD</div>
+        <div class="who"><div class="name">John Doe</div><div class="role">Site Supervisor · North</div></div>
+        <button class="exit" aria-label="Log out"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3"/></svg></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar" data-fix="2">
+        <a class="back" href="schedules-mockup.html" aria-label="Back to schedules"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></a>
+        <div class="title">
+          <h1>Frame inspection – Completion</h1>
+          <p>BK-1042 · Lot 14, Harbour View Apartments</p>
+        </div>
+        <div class="top-actions">
+          <span class="saved"><svg class="i" viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"/><path d="m9.5 13.5 2 2 3.5-3.5"/></svg>Draft saves automatically</span>
+          <label class="search"><input type="search" placeholder="Search" aria-label="Search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></label>
+          <button class="bell" aria-label="Notifications"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></button>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="q-area">
+          <div class="q-body" id="qbody" data-fix="5"></div>
+        </div>
+
+        <div class="q-foot" data-fix="1">
+          <button class="btn" id="prev"><svg class="i" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>Previous</button>
+          <div class="up-next" id="upnext"></div>
+          <button class="btn primary" id="next">Next<svg class="i" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+        </div>
+
+        <aside class="p-area" aria-label="Checklist progress">
+          <div class="p-head" data-fix="4">
+            <div class="ring">
+              <svg viewBox="0 0 52 52"><circle class="track" cx="26" cy="26" r="21"/><circle class="bar" id="ring-bar" cx="26" cy="26" r="21"/></svg>
+              <span id="ring-pct">0%</span>
+            </div>
+            <div class="p-count" id="count"></div>
+          </div>
+          <div class="steps-wrap" data-fix="3">
+            <div class="p-eyebrow">Questions</div>
+            <ol class="steps" id="steps"></ol>
+          </div>
+        </aside>
+
+        <div class="p-foot" data-fix-outline>
+          <button class="btn block" id="review"><svg class="i" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Review &amp; submit</button>
+        </div>
+      </section>
+      <section class="review" id="review-view" hidden></section>
+    </main>
+
+  </div>
+  </div>
+</div>
+
+<script>
+  // Each option can carry follow-up actions that must be done before the question counts as complete.
+  //   note:   a required written explanation
+  //   upload: one or more named files / photos
+  // `tone` colours the selected option: good (green), bad (red), or neutral (dark).
+  const NOTE = (label, ph) => ({ kind: 'note', label, ph });
+  const UPLOAD = (label, slots, optional) => ({ kind: 'upload', label, slots, optional });
+  const PHOTO = label => UPLOAD(label, [label], true);
+  const QS = [
+    { sec: 'Site & safety', step: 'Site left clean', q: 'Has the site been left clean, with all rubbish removed?', help: 'Check floors, the skip bin area and the street frontage.',
+      opts: [{ v: 'Yes', tone: 'good' }, { v: 'No', tone: 'bad', act: [NOTE('What still needs to be cleaned?', 'e.g. Timber offcuts left in garage'), PHOTO('Photo of the area')] }] },
+    { sec: 'Site & safety', step: 'Barriers & signage', q: 'Are the safety barriers and signage in good condition?', help: 'Check the front fence, open edges and the site sign.',
+      opts: [{ v: 'Yes', tone: 'good', act: [UPLOAD('Photos of barriers and signage', ['Barriers', 'Signage'])] }, { v: 'Maybe', tone: 'warn', act: [NOTE('What needs checking?', 'e.g. Fence panel loose on the north side'), PHOTO('Photo of the area')] }, { v: 'No', tone: 'bad', act: [NOTE('What is missing or damaged?', 'e.g. Site sign blown over'), UPLOAD('Photo of the damage', ['Damage'])] }] },
+    { sec: 'Site & safety', step: 'Defects found', q: 'Were any defects found?', help: 'Select every defect you found. Pick “None” if the work is clear.', multi: true,
+      opts: [{ v: 'None', tone: 'good', only: true }, { v: 'Paint touch-up needed', tone: 'bad' }, { v: 'Door alignment', tone: 'bad' }, { v: 'Cracked tile', tone: 'bad' }],
+      multiAct: [NOTE('Where are the defects?', 'e.g. Chipped tile at the ensuite entry'), UPLOAD('Photos of the defects', ['Photo 1', 'Photo 2'])] },
+    { sec: 'Frame', step: 'Frame plumb & level', q: 'Is the frame plumb and level within tolerance?', help: 'Spot-check walls and openings with a level.',
+      opts: [{ v: 'Yes', tone: 'good' }, { v: 'No', tone: 'bad', act: [NOTE('Which walls or openings are out, and by how much?', 'e.g. Bed 2 window opening 6 mm out'), PHOTO('Photo of the level reading')] }] },
+    { sec: 'Frame', step: 'Fixings & brackets', q: 'Are all fixings and brackets installed to the engineering spec?', help: 'Check tie-downs, straps and bracing.',
+      opts: [{ v: 'Yes', tone: 'good' }, { v: 'No', tone: 'bad', act: [NOTE('What is missing?', 'e.g. Two tie-downs missing on the rear wall'), PHOTO('Photo of the area')] }] },
+    { sec: 'Frame', step: 'Work to standard', q: 'Has the work been completed to the required standard?', help: 'Compare against the plans and the scope of works.',
+      opts: [{ v: 'Yes', tone: 'good', act: [UPLOAD('Photo of the completed work', ['Completed work'])] }, { v: 'No', tone: 'bad', act: [NOTE('What falls short of the standard?', 'e.g. Gaps around the laundry door frame'), PHOTO('Photo of the area')] }] },
+    { sec: 'Finish', step: 'Finish quality', q: 'Is the finish quality ready for handover?', help: 'Check cut edges, nail heads and visible joins.',
+      opts: [{ v: 'Yes', tone: 'good' }, { v: 'No', tone: 'bad', act: [NOTE('What needs fixing before handover?', 'e.g. Nail heads showing in the hallway'), PHOTO('Photo of the area')] }] },
+    { sec: 'Handover', step: 'Client walkthrough', q: 'Has the client walkthrough been completed?', help: 'Walk the client through the work and answer their questions.',
+      opts: [{ v: 'Yes', tone: 'good' }, { v: 'Maybe', tone: 'warn', act: [NOTE('What is still to be shown to the client?', 'e.g. Garage and side access')] }, { v: 'No', tone: 'bad', act: [NOTE('Why not, and when is it rebooked?', 'e.g. Client away, rebooked for Friday 10am')] }] },
+    { sec: 'Handover', step: 'Keys handed over', q: 'Have all keys been handed over?', help: 'Include site, lockbox and garage keys.',
+      opts: [{ v: 'Yes', tone: 'good', act: [UPLOAD('Photo of the signed key receipt', ['Key receipt'])] }, { v: 'No', tone: 'bad', act: [NOTE('Who still holds the keys?', 'e.g. Lockbox key with the plumber')] }] },
+    { sec: 'Handover', step: 'Completion photos', q: 'Have the completion photos been taken?', help: 'Capture each elevation of the finished work.',
+      opts: [{ v: 'Yes', tone: 'good', act: [UPLOAD('Completion photos', ['Front', 'Rear', 'Interior'])] }, { v: 'No', tone: 'bad', act: [NOTE('Why could the photos not be taken?', 'e.g. Scaffold still up at the rear')] }] },
+    { sec: 'Wrap-up', step: 'Comments for PM', q: 'Any comments for the project manager?', help: 'Anything they should know before sign-off.', type: 'text', optional: true },
+    { sec: 'Wrap-up', step: 'Reschedule date', q: 'Do you want to reschedule the completion date?', help: 'Only if the crew needs to come back.', type: 'resched', optional: true },
+  ];
+
+  const ICON = {
+    note: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/>',
+    turn: '<path d="M6 4v7a3 3 0 0 0 3 3h10M15 10l4 4-4 4"/>',
+    camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+    check: '<path d="M5 12l5 5L20 7"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    q: '<path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01"/>',
+    flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+    alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/>',
+    up: '<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',
+    file: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/>',
+  };
+  const svg = (name, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name]}</svg>`;
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const pad = n => String(n).padStart(2, '0');
+  const $ = id => document.getElementById(id);
+  const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+  const TONES = [["#c9b48a", "#7d8f5a"], ["#a8b8c8", "#8a7a5c"], ["#b9a07a", "#5f7048"]];
+  const photoSvg = i => { const [a, b] = TONES[i % 3]; return `<svg viewBox="0 0 96 72" preserveAspectRatio="xMidYMid slice"><rect width="96" height="72" fill="${a}"/><path d="M0 52 26 34l18 12 20-18 32 26v18H0z" fill="${b}"/><circle cx="70" cy="18" r="7" fill="#fff" opacity=".7"/></svg>`; };
+
+  const RING = 2 * Math.PI * 21;
+  $('ring-bar').style.strokeDasharray = RING;
+
+  let cur = 0;
+  // ans[i]: string (single), array (multi), or {on, date} (reschedule). notes[i][label] / files[i][slot] hold action progress.
+  const ans = [], notes = QS.map(() => ({})), files = QS.map(() => ({}));
+
+  const picked = i => QS[i].multi ? (ans[i] || []) : ans[i] ? [ans[i]] : [];
+  const isAnswered = i => {
+    const c = QS[i];
+    if (c.type === 'text') return !!(ans[i] || '').trim();
+    if (c.type === 'resched') return !!ans[i] && (!ans[i].on || !!ans[i].date);
+    return picked(i).length > 0;
+  };
+  function actionsFor(i){
+    const c = QS[i];
+    if (c.multi) return picked(i).some(v => v !== 'None') ? c.multiAct : [];
+    const o = (c.opts || []).find(o => o.v === ans[i]);
+    return (o && o.act) || [];
+  }
+  const actionDone = (i, a) => a.optional || (a.kind === 'note' ? !!(notes[i][a.label] || '').trim() : a.slots.every(s => files[i][s]));
+  const pending = i => actionsFor(i).filter(a => !actionDone(i, a)).length;
+  const isComplete = i => isAnswered(i) && pending(i) === 0;
+
+  function optionsHtml(i){
+    const c = QS[i], sel = picked(i);
+    const cls = c.opts.length > 2 ? ` cols-${c.opts.length}` : '';
+    return `<div class="answers${cls}${c.multi ? ' multi' : ''}">${c.opts.map(o => {
+      const on = sel.includes(o.v);
+      const ic = o.v === 'Yes' || o.v === 'None' ? 'check' : o.v === 'No' ? 'x' : o.v === 'Maybe' ? 'q' : 'flag';
+      return `<button class="answer${on ? ' is-' + o.tone : ''}" data-answer="${esc(o.v)}" aria-pressed="${on}"><span class="dot">${svg(ic)}</span>${esc(o.v)}</button>`;
+    }).join('')}</div>`;
+  }
+
+  // Follow-up: a quiet grey panel under the answers, opened by the answer that needs it.
+  function actionsHtml(i){
+    const acts = actionsFor(i);
+    if (!acts.length) return '';
+    const why = QS[i].multi ? `Because you reported <b>${picked(i).length === 1 ? 'a defect' : picked(i).length + ' defects'}</b>` : `Because you answered <b>${esc(ans[i])}</b>`;
+    return `<div class="follow-up">
+      <div class="fu-why"><span class="fu-ic">${svg('turn')}</span>${why}</div>
+      ${acts.map(a => {
+        const tag = a.optional ? '<span class="opt">Optional</span>' : '<i class="req">*</i>';
+        if (a.kind === 'note') return `<label class="fu-field"><span class="fu-label">${esc(a.label)} ${tag}</span>
+          <textarea class="a-note" data-note="${esc(a.label)}" placeholder="${esc(a.ph || '')}" rows="3">${esc(notes[i][a.label] || '')}</textarea></label>`;
+        return `<div class="fu-field"><span class="fu-label">${esc(a.label)} ${tag}</span><div class="tiles">${a.slots.map(s => {
+          const f = files[i][s];
+          return f
+            ? `<div class="tile has"><div class="tile-img">${photoSvg(s.length)}</div><button class="tile-x" data-upload="${esc(s)}" aria-label="Replace ${esc(s)}">${svg('x', 'i sm')}</button></div>`
+            : `<button class="tile" data-upload="${esc(s)}">${svg('camera')}<span>${a.slots.length > 1 ? esc(s) : 'Add'}</span></button>`;
+        }).join('')}</div></div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  function renderQuestion(){
+    const c = QS[cur];
+    let input;
+    if (c.type === 'text'){
+      input = `<div class="field"><textarea id="txt" placeholder="Type a comment…">${esc(ans[cur] || '')}</textarea></div>`;
+    } else if (c.type === 'resched'){
+      const r = ans[cur] || { on: false, date: '' };
+      input = `<div class="resched">
+        <label class="check"><input type="checkbox" id="resched-on"${r.on ? ' checked' : ''}><span>Yes, reschedule the completion date</span></label>
+        ${r.on ? `<div class="a-field"><span class="a-label">New completion date <i>*</i></span><input type="date" id="resched-date" value="${esc(r.date)}"></div>` : ''}
+      </div>`;
+    } else {
+      input = optionsHtml(cur) + actionsHtml(cur);
+    }
+    $('qbody').innerHTML = `
+      <div class="eyebrow-row"><span class="q-eyebrow">Question ${cur + 1} · ${esc(c.sec)}</span><span class="chip">${c.optional ? 'Optional' : 'Required'}</span>${c.multi ? '<span class="chip">Select all that apply</span>' : ''}</div>
+      <h2 class="q-title">${esc(c.q)}</h2>
+      <p class="q-help">${esc(c.help)}</p>
+      ${input}`;
+  }
+
+  function renderFooter(){
+    $('prev').disabled = cur === 0;
+    $('next').disabled = cur === QS.length - 1;
+    $('upnext').innerHTML = cur < QS.length - 1
+      ? `Up next<span class="n">${pad(cur + 2)}</span><b>${esc(QS[cur + 1].step)}</b>`
+      : 'Last question. <b>Review when you’re ready.</b>';
+  }
+
+  function renderSteps(){
+    $('steps').innerHTML = QS.map((c, i) => {
+      const done = isComplete(i), waiting = isAnswered(i) && !done;
+      const cls = i === cur ? ' current' : done ? ' done' : waiting ? ' waiting' : '';
+      const mark = i === cur ? i + 1 : done ? svg('check', 'i sm') : waiting ? '!' : i + 1;
+      return `<li><button class="step${cls}" data-go="${i}"${i === cur ? ' aria-current="step"' : ''}><span class="n">${mark}</span>${esc(c.step)}${waiting ? `<span class="needs">${pending(i)} action${pending(i) > 1 ? 's' : ''}</span>` : ''}</button></li>`;
+    }).join('');
+  }
+
+  function renderProgress(){
+    const n = QS.filter((_, i) => isComplete(i)).length;
+    const waiting = QS.filter((_, i) => isAnswered(i) && !isComplete(i)).length;
+    const left = QS.length - n;
+    $('ring-bar').style.strokeDashoffset = RING * (1 - n / QS.length);
+    $('ring-pct').textContent = Math.round(n / QS.length * 100) + '%';
+    $('count').innerHTML = `<b>${n} of ${QS.length} complete</b><span>${left ? `${left} to go` : 'All done'}${waiting ? ` · <em>${waiting} need${waiting > 1 ? '' : 's'} action</em>` : ''}</span>`;
+    const ready = QS.every((c, i) => (c.optional && !isAnswered(i)) || isComplete(i));
+    $('review').classList.toggle('dark', ready);
+  }
+
+  // Only the action box and side panel refresh while typing, so the field keeps focus.
+  function refreshStatus(){
+    renderSteps(); renderProgress();
+  }
+
+  function render(){ renderQuestion(); renderFooter(); renderSteps(); renderProgress(); }
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-answer],[data-upload],[data-go],#prev,#next,#fixes-toggle');
+    if (!t) return;
+    if (t.dataset.answer){
+      const c = QS[cur], v = t.dataset.answer;
+      if (c.multi){
+        const o = c.opts.find(o => o.v === v);
+        let sel = picked(cur);
+        sel = sel.includes(v) ? sel.filter(x => x !== v) : o.only ? [v] : [...sel.filter(x => !c.opts.find(p => p.v === x).only), v];
+        ans[cur] = sel;
+      } else ans[cur] = ans[cur] === v ? '' : v;
+      render();
+    }
+    else if (t.dataset.upload){
+      // Stand-in for a file picker: fake a file name for the slot.
+      const s = t.dataset.upload;
+      files[cur][s] = `${slug(s)}-${String(Math.floor(Math.random() * 900) + 100)}.jpg · 2.${Math.floor(Math.random() * 9)} MB`;
+      render();
+    }
+    else if (t.dataset.go != null){ cur = Number(t.dataset.go); render(); }
+    else if (t.id === 'prev' && cur > 0){ cur--; render(); }
+    else if (t.id === 'next' && cur < QS.length - 1){ cur++; render(); }
+    else if (t.id === 'fixes-toggle'){ t.setAttribute('aria-pressed', document.body.classList.toggle('show-fixes')); }
+  });
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if (t.dataset.note != null){ notes[cur][t.dataset.note] = t.value; refreshStatus(); }
+    if (t.id === 'txt'){ ans[cur] = t.value; refreshStatus(); }
+    if (t.id === 'resched-date'){ ans[cur] = { on: true, date: t.value }; refreshStatus(); }
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 'resched-on'){ ans[cur] = { on: e.target.checked, date: (ans[cur] && ans[cur].date) || '' }; render(); }
+  });
+
+
+  // ---- Submitted review: read-only summary of everything that was answered ----
+  let submitted = null;
+  const toneOf = (i, v) => { const o = (QS[i].opts || []).find(o => o.v === v); return o ? o.tone : 'neutral'; };
+  const needsFollowUp = i => !QS[i].type && picked(i).some(v => toneOf(i, v) === 'bad' || toneOf(i, v) === 'warn');
+  const fmtDate = d => d ? d.split('-').reverse().join('-') : '';
+
+  function answerChips(i){
+    const c = QS[i];
+    if (c.type === 'text') return (ans[i] || '').trim() ? '<span class="r-chip neutral">Comment added</span>' : '<span class="r-chip none">Skipped</span>';
+    if (c.type === 'resched') return ans[i] && ans[i].on ? `<span class="r-chip warn">${fmtDate(ans[i].date)}</span>` : '<span class="r-chip none">Not needed</span>';
+    return picked(i).map(v => `<span class="r-chip ${toneOf(i, v)}">${esc(v)}</span>`).join('');
+  }
+  function evidence(i){
+    const c = QS[i];
+    const ns = c.type === 'text' ? [(ans[i] || '').trim()].filter(Boolean)
+      : actionsFor(i).filter(a => a.kind === 'note').map(a => (notes[i][a.label] || '').trim()).filter(Boolean);
+    const ph = actionsFor(i).filter(a => a.kind === 'upload').flatMap(a => a.slots.filter(s => files[i][s]).map(s => s));
+    if (!ns.length && !ph.length) return '';
+    return `<div class="r-ev">${ns.map(n => `<p class="r-note">“${esc(n)}”</p>`).join('')}
+      ${ph.length ? `<div class="r-photos">${ph.map(s => `<figure><div>${photoSvg(s.length)}</div><figcaption>${esc(s)}</figcaption></figure>`).join('')}</div>` : ''}</div>`;
+  }
+  const row = i => `<div class="r-row${needsFollowUp(i) ? ' attn' : ''}"><span class="r-n">${pad(i + 1)}</span>
+      <div class="r-main"><div class="r-q">${esc(QS[i].q)}</div>${evidence(i)}</div><div class="r-ans">${answerChips(i)}</div></div>`;
+
+  function renderReview(){
+    const follow = QS.map((_, i) => i).filter(needsFollowUp);
+    const photos = QS.reduce((n, _, i) => n + Object.keys(files[i]).length, 0);
+    const re = ans[11] && ans[11].on ? fmtDate(ans[11].date) : 'None';
+    const secs = [...new Set(QS.map(c => c.sec))];
+    $('review-view').innerHTML = `
+      <div class="rv-hero">
+        <span class="rv-ok">${svg('check')}</span>
+        <div class="rv-title"><h2>Checklist submitted</h2><p>Submitted by <b>John Doe</b> · ${submitted} · Sent to the project manager</p></div>
+        <div class="rv-actions"><button class="btn" data-toast>${svg('file')}Download PDF</button><button class="btn" id="reopen">${svg('note')}Edit answers</button></div>
+      </div>
+      <div class="rv-stats">
+        <div><span>Questions</span><b>${QS.filter((_, i) => isComplete(i)).length}<small>/${QS.length}</small></b></div>
+        <div class="${follow.length ? 'bad' : 'good'}"><span>Need follow-up</span><b>${follow.length}</b></div>
+        <div><span>Photos</span><b>${photos}</b></div>
+        <div class="${re !== 'None' ? 'warn' : ''}"><span>Return visit</span><b class="sm">${re}</b></div>
+      </div>
+      ${follow.length ? `<section class="rv-sec attn-sec"><h3>${svg('alert')}Needs follow-up <em>${follow.length}</em></h3>${follow.map(row).join('')}</section>` : ''}
+      ${secs.map(sec => `<section class="rv-sec"><h3>${esc(sec)}</h3>${QS.map((c, i) => c.sec === sec ? row(i) : '').join('')}</section>`).join('')}`;
+  }
+
+  function showReview(on){
+    $('review-view').hidden = !on;
+    document.querySelector('.card').hidden = on;
+    document.querySelector('.saved').innerHTML = on ? `${svg('check')}Submitted` : `${svg('check')}Draft saves automatically`;
+    if (on) renderReview();
+  }
+
+  // Sample answers so the review can be seen without filling in all 12 questions.
+  function fillSample(){
+    const pick = ['No', 'Yes', ['Paint touch-up needed', 'Cracked tile'], 'Yes', 'Yes', 'Yes', 'Yes', 'Maybe', 'Yes', 'Yes'];
+    pick.forEach((v, i) => { ans[i] = v; });
+    const sampleNotes = { 0: 'Timber offcuts left in the garage. Skip collection booked for Tuesday.', 2: 'Chipped tile at the ensuite entry and paint runs on the laundry door frame.', 7: 'Garage and side access still to be shown. Client back on Friday.' };
+    QS.forEach((c, i) => actionsFor(i).forEach(a => {
+      if (a.kind === 'note') notes[i][a.label] = sampleNotes[i] || 'Sample note';
+      else a.slots.forEach(s => { files[i][s] = `${slug(s)}.jpg · 2.4 MB`; });
+    }));
+    ans[10] = 'Please check the ensuite tile before the client handover on Friday.';
+    ans[11] = { on: true, date: '2026-10-10' };
+    cur = 11; render();
+  }
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('#review,#reopen,#fill-sample');
+    if (!t) return;
+    if (t.id === 'fill-sample'){ showReview(false); fillSample(); return; }
+    if (t.id === 'reopen'){ showReview(false); return; }
+    const first = QS.findIndex((c, i) => !(c.optional && !isAnswered(i)) && !isComplete(i));
+    if (first !== -1){ cur = first; render(); document.getElementById('qbody').classList.add('nudge'); setTimeout(() => document.getElementById('qbody').classList.remove('nudge'), 600); return; }
+    const d = new Date();
+    submitted = `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}, ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    showReview(true);
+  });
+
+  render();
+</script>
+</body>
+</html>
