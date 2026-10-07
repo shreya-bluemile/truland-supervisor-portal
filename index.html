@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Truland Supervisor Designs</title>
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --text:#1b2330; --muted:#647083; --line:#e3e6eb; --accent:#1f4fd1; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12161d; --card:#1b212b; --text:#e8ecf2; --muted:#9aa5b5; --line:#2a3240; --accent:#7aa2ff; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  header { padding:40px 24px 8px; max-width:1200px; margin:0 auto; }
+  h1 { margin:0 0 4px; font-size:28px; }
+  header p { margin:0; color:var(--muted); }
+  nav { max-width:1200px; margin:16px auto 0; padding:0 24px; display:flex; flex-wrap:wrap; gap:8px; }
+  nav a { padding:6px 12px; border:1px solid var(--line); border-radius:999px; color:var(--text); text-decoration:none; background:var(--card); font-size:13px; }
+  nav a:hover { border-color:var(--accent); color:var(--accent); }
+  main { max-width:1200px; margin:0 auto; padding:8px 24px 60px; }
+  section { margin-top:36px; }
+  h2 { font-size:19px; margin:0 0 4px; }
+  section > p { margin:0 0 14px; color:var(--muted); font-size:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; text-decoration:none; color:inherit; transition:transform .15s, box-shadow .15s; }
+  .card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.08); border-color:var(--accent); }
+  .thumb { height:170px; overflow:hidden; position:relative; background:#fff; border-bottom:1px solid var(--line); }
+  .thumb iframe { width:1280px; height:850px; border:0; transform:scale(.2); transform-origin:0 0; pointer-events:none; }
+  .meta { padding:12px 14px; }
+  .meta strong { display:block; font-size:14px; }
+  .meta span { color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Truland Supervisor Portal: Designs</h1>
+  <p>All design mockups, grouped by module. Click any card to open the full design.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const modules = [
+  { name: "Dashboard", desc: "Supervisor home overview.", items: [
+    ["dashboard-mockup.html", "Supervisor Dashboard"] ]},
+  { name: "Schedules & Bookings", desc: "Job schedules and booking details.", items: [
+    ["schedules-mockup.html", "Schedules"],
+    ["detail-page-concepts.html", "Booking Detail: 3 Concepts"] ]},
+  { name: "Timesheets", desc: "Time tracking for crews.", items: [
+    ["timesheet-concepts.html", "Timesheet: 3 Concepts"] ]},
+  { name: "Client Handover", desc: "Handing completed work over to the client.", items: [
+    ["client-handover-mockup.html", "Client Handover: v1"],
+    ["client-handover-v3-mockup.html", "Client Handover: v3"],
+    ["client-handover-checklist-mockup.html", "Client Handover with Checklist"],
+    ["client-handover-map-mockup.html", "Client Handover with Map"] ]},
+  { name: "Checklists", desc: "Completion and handover checklists, with layout options.", items: [
+    ["completion-checklist-mockup.html", "Completion Checklist"],
+    ["checklist-screen-v2.html", "Handover Checklist: v2"],
+    ["checklist-section-options.html", "Checklist Section Options"],
+    ["checklist-placement-concepts.html", "Checklist Placement Concepts"],
+    ["checklist-more-options.html", "Checklist Display Options"] ]},
+  { name: "Clients", desc: "Client members and contracts.", items: [
+    ["client-members-contract-mockup.html", "Client Members & Contract"] ]},
+  { name: "UI Components", desc: "Shared interface pieces.", items: [
+    ["rail-options.html", "Navigation Rail Options"] ]},
+];
+const nav = document.getElementById("nav"), main = document.getElementById("main");
+modules.forEach((m, i) => {
+  const id = "m" + i;
+  nav.insertAdjacentHTML("beforeend", `<a href="#${id}">${m.name} (${m.items.length})</a>`);
+  main.insertAdjacentHTML("beforeend", `<section id="${id}"><h2>${m.name}</h2><p>${m.desc}</p><div class="grid">${
+    m.items.map(([file, title]) => `<a class="card" href="${file}" target="_blank">
+      <div class="thumb"><iframe src="${file}" loading="lazy" tabindex="-1" aria-hidden="true"></iframe></div>
+      <div class="meta"><strong>${title}</strong><span>${file}</span></div></a>`).join("")
+  }</div></section>`);
+});
+</script>
+</body>
+</html>
